@@ -98,6 +98,8 @@ const ProductsPage = () => {
         </div>
       </section>
 
+
+
       {/* Products Grid */}
       <section className="products-section">
         <div className="container">
@@ -107,6 +109,36 @@ const ProductsPage = () => {
             </div>
           ) : (
             <div className="products-grid">
+              {/* Featured 9 Axis CNC Machine */}
+              <div className="product-card featured-product">
+                <div className="product-image">
+                  <img 
+                    src="/images/cnc-9axis-main.png" 
+                    alt="9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine"
+                    onError={(e) => {
+                      e.target.src = '/images/placeholder-product.svg';
+                    }}
+                  />
+                  <div className="product-badge">FEATURED</div>
+                </div>
+                <div className="product-info">
+                  <h3 className="product-title">9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine</h3>
+                  <p className="product-description">High-precision 9-axis CNC machine with automatic tool changing capability for universal cutting and engraving operations.</p>
+                  <div className="product-details">
+                    <span className="product-category">CNC Machines</span>
+                    <span className="product-brand">CNC Bangle And Ring Cutting Machine</span>
+                  </div>
+                  <div className="product-actions">
+                    <Link to="/cnc-9axis-machine" className="btn btn-primary">
+                      View Details
+                    </Link>
+                    <button className="btn btn-outline">
+                      Contact Us
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
               {filteredProducts.map((product) => (
                 <div key={product._id} className="product-card">
                   <div className="product-image">

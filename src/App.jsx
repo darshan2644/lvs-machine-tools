@@ -9,8 +9,11 @@ import ProfilePage from './pages/ProfilePage';
 import CategoriesPage from './pages/CategoriesPage';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import CNC9AxisPage from './pages/CNC9AxisPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import QualityPage from './pages/QualityPage';
+import InquiryPage from './pages/InquiryPage';
 import Footer from './components/Footer';
 import './App.css';
 
@@ -26,8 +29,11 @@ function App() {
               <Route path="/categories" element={<CategoriesPage />} />
               <Route path="/products" element={<ProductsPage />} />
               <Route path="/product/:id" element={<ProductDetailPage />} />
+              <Route path="/cnc-9axis-machine" element={<CNC9AxisPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/quality" element={<QualityPage />} />
+              <Route path="/inquiry" element={<InquiryPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/profile" element={<ProfilePage />} />
