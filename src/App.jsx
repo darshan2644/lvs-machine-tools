@@ -10,6 +10,12 @@ import CategoriesPage from './pages/CategoriesPage';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import CNC9AxisPage from './pages/CNC9AxisPage';
+import BangleCNCPage from './pages/BangleCNCPage';
+import CNCBangleCuttingPage from './pages/CNCBangleCuttingPage';
+import CNCBangleFlatHalfRoundPage from './pages/CNCBangleFlatHalfRoundPage';
+import CNCBangleMR5Page from './pages/CNCBangleMR5Page';
+import BangleCuttingSemiAutoPage from './pages/BangleCuttingSemiAutoPage';
+import CNCBangleCategoryPage from './pages/CNCBangleCategoryPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import QualityPage from './pages/QualityPage';
@@ -30,6 +36,12 @@ function App() {
               <Route path="/products" element={<ProductsPage />} />
               <Route path="/product/:id" element={<ProductDetailPage />} />
               <Route path="/cnc-9axis-machine" element={<CNC9AxisPage />} />
+              <Route path="/bangle-cnc-cutting-machine" element={<BangleCNCPage />} />
+              <Route path="/cnc-bangle-cutting-machine" element={<CNCBangleCuttingPage />} />
+              <Route path="/cnc-bangle-flat-half-round" element={<CNCBangleFlatHalfRoundPage />} />
+              <Route path="/cnc-bangle-mr5" element={<CNCBangleMR5Page />} />
+              <Route path="/bangle-cutting-semi-auto" element={<BangleCuttingSemiAutoPage />} />
+              <Route path="/cnc-bangle-category" element={<CNCBangleCategoryPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/quality" element={<QualityPage />} />

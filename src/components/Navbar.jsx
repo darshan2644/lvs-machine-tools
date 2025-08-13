@@ -39,8 +39,10 @@ const Navbar = () => {
       <div className="navbar-container">
         {/* Logo */}
         <Link to="/" className="navbar-logo">
-          <img src="/images/lvs-logo.png" alt="LVS Machine and Tools" className="logo-image" />
-          <span className="logo-text">LVS Machine and Tools</span>
+          <img src="/images/lvs-logo.png" alt="LVS Machine & Tools" className="logo-image" />
+          <div className="logo-content">
+            <span className="logo-text">LVS Machine & Tools</span>
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
@@ -68,13 +70,23 @@ const Navbar = () => {
             </span>
             <ul className="dropdown-menu">
               <li>
-                <Link to="/category/cnc-bangle-cutting" className="dropdown-link">
+                <Link to="/cnc-bangle-category" className="dropdown-link">
                   <svg className="dropdown-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="8" x2="12" y2="16"></line>
                     <line x1="8" y1="12" x2="16" y2="12"></line>
                   </svg>
                   CNC Bangle & Ring Cutting
+                </Link>
+              </li>
+              <li>
+                <Link to="/bangle-cnc-cutting-machine" className="dropdown-link">
+                  <svg className="dropdown-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="m8 12 2 2 4-4"></path>
+                  </svg>
+                  Bangle CNC Cutting Machine
                 </Link>
               </li>
               <li>

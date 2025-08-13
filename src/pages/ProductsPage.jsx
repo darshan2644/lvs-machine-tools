@@ -138,6 +138,66 @@ const ProductsPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Bangle CNC Cutting Machine */}
+              <div className="product-card featured-product">
+                <div className="product-image">
+                  <img 
+                    src="/images/bangle-cnc-main.png" 
+                    alt="Bangle CNC Cutting Machine"
+                    onError={(e) => {
+                      e.target.src = '/images/placeholder-product.svg';
+                    }}
+                  />
+                  <div className="product-badge">NEW</div>
+                </div>
+                <div className="product-info">
+                  <h3 className="product-title">Bangle CNC Cutting Machine</h3>
+                  <p className="product-description">Leading Manufacturer of Bangle CNC Cutting Machine with high precision cutting technology for jewelry manufacturing.</p>
+                  <div className="product-details">
+                    <span className="product-category">Bangle CNC Cutting</span>
+                    <span className="product-brand">₹ 1,05,000/Piece</span>
+                  </div>
+                  <div className="product-actions">
+                    <Link to="/bangle-cnc-cutting-machine" className="btn btn-primary">
+                      View Details
+                    </Link>
+                    <button className="btn btn-outline">
+                      Contact Us
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* CNC Bangle Cutting Machine */}
+              <div className="product-card">
+                <div className="product-image">
+                  <img 
+                    src="/images/cnc-bangle-main.png" 
+                    alt="CNC Bangle Cutting Machine"
+                    onError={(e) => {
+                      e.target.src = '/images/placeholder-product.svg';
+                    }}
+                  />
+                </div>
+                <div className="product-info">
+                  <h3 className="product-title">CNC Bangle Cutting Machine</h3>
+                  <p className="product-description">Professional CNC bangle cutting machine for precision jewelry manufacturing with standard model specifications.</p>
+                  <div className="product-details">
+                    <span className="product-category">Bangle CNC Cutting</span>
+                    <span className="product-brand">Ask Price</span>
+                  </div>
+                  <div className="product-actions">
+                    <Link to="/cnc-bangle-cutting-machine" className="btn btn-primary">
+                      View Details
+                    </Link>
+                    <button className="btn btn-outline">
+                      Contact Us
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               
               {filteredProducts.map((product) => (
                 <div key={product._id} className="product-card">
