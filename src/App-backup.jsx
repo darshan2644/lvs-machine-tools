@@ -19,12 +19,13 @@ import CNCBangleCategoryPage from './pages/CNCBangleCategoryPage';
 import ShoppingCartDemo from './pages/ShoppingCartDemo';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
-import MyOrdersPage from './pages/MyOrdersPage';
 import CartPage from './pages/CartPage';
+import MyOrdersPage from './pages/MyOrdersPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import QualityPage from './pages/QualityPage';
 import InquiryPage from './pages/InquiryPage';
+import EmailTestPage from './pages/EmailTestPage';
 import Footer from './components/Footer';
 import './App.css';
 
@@ -49,9 +50,9 @@ function App() {
               <Route path="/cnc-bangle-category" element={<CNCBangleCategoryPage />} />
               <Route path="/cart-demo" element={<ShoppingCartDemo />} />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/my-orders" element={<MyOrdersPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
-              <Route path="/my-orders" element={<MyOrdersPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/quality" element={<QualityPage />} />
@@ -59,6 +60,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/email-test" element={<EmailTestPage />} />
               {/* Add more routes here later */}
             </Routes>
           </main>

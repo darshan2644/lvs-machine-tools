@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import ShoppingCart from './ShoppingCart';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -184,14 +185,7 @@ const Navbar = () => {
 
         {/* Action Buttons */}
         <div className="navbar-actions">
-          <button className="action-btn cart-btn">
-            <svg className="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="m1 1 4 4 16 6-8 4-4-4"></path>
-            </svg>
-            <span className="cart-count">0</span>
-          </button>
+          <ShoppingCart />
 
           {isAuthenticated ? (
             <div className="user-menu-wrapper">
