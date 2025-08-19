@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { addToCart, buyNow } from '../services/cartService';
 import './HomePage.css';
 
 const HomePage = () => {
   const [categories, setCategories] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -72,6 +74,34 @@ const HomePage = () => {
         <span className="review-count">({reviewCount})</span>
       </div>
     );
+  };
+
+  const handleAddToCart = async (product) => {
+    try {
+      const result = await addToCart(product._id, 1, product.price);
+      if (result.success) {
+        alert('Added to cart!');
+      } else {
+        alert(result.message || 'Failed to add to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add to cart');
+    }
+  };
+
+  const handleBuyNow = async (product) => {
+    try {
+      const result = await buyNow(product._id, 1, product.price);
+      if (result.success) {
+        navigate(`/order-tracking/${result.orderId}`);
+      } else {
+        alert(result.message || 'Failed to place order');
+      }
+    } catch (error) {
+      console.error('Error in buy now:', error);
+      alert('Failed to place order');
+    }
   };
 
   if (loading) {
@@ -273,8 +303,11 @@ const HomePage = () => {
                       <button className="btn btn-primary product-btn">
                         View Details
                       </button>
-                      <button className="btn btn-outline product-btn">
+                      <button className="btn btn-outline product-btn" onClick={() => handleAddToCart(product)}>
                         Add to Cart
+                      </button>
+                      <button className="btn btn-primary product-btn" onClick={() => handleBuyNow(product)}>
+                        Buy Now
                       </button>
                     </div>
                   </div>

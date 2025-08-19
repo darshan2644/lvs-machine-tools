@@ -7,9 +7,14 @@ const mongoose = require('mongoose');
 const Category = require('./models/Category');
 const Product = require('./models/Product');
 const User = require('./models/User');
+const Cart = require('./models/Cart');
+const Order = require('./models/Order');
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const orderRoutes = require('./routes/order');
+const cartRoutes = require('./routes/cart');
+const emailRoutes = require('./routes/email');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +25,9 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/email', emailRoutes);
 
 // MongoDB connection
 const connectDB = async () => {
@@ -28,7 +36,8 @@ const connectDB = async () => {
     console.log('MongoDB Connected Successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    process.exit(1);
+    console.log('Continuing without MongoDB - using mock data...');
+    // Don't exit, just continue without database
   }
 };
 
@@ -38,7 +47,16 @@ connectDB();
 // Categories API endpoint
 app.get('/api/categories', async (req, res) => {
   try {
-    const categories = await Category.find({ isActive: true }).sort({ order: 1 });
+    let categories;
+    try {
+      categories = await Category.find({ isActive: true }).sort({ order: 1 });
+    } catch (dbError) {
+      // If database error, use mock data
+      categories = [
+        { _id: 'cnc-machines', name: 'CNC Machines', slug: 'cnc-machines' },
+        { _id: 'bangle-cnc-cutting', name: 'Bangle CNC Cutting', slug: 'bangle-cnc-cutting' }
+      ];
+    }
     
     res.json({
       success: true,
@@ -73,7 +91,32 @@ app.get('/api/products', async (req, res) => {
     }
     
     // Get products from database
-    const products = await Product.find(query).sort({ createdAt: -1 });
+    let products;
+    try {
+      products = await Product.find(query).sort({ createdAt: -1 });
+    } catch (dbError) {
+      // If database error, use mock data
+      products = [
+        {
+          _id: 'cnc-9axis',
+          name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
+          description: 'High-precision 9-axis CNC machine with automatic tool changing capability.',
+          price: 250000,
+          image: '/images/cnc-9axis-main.png',
+          category: 'cnc-machines',
+          categoryName: 'CNC Machines'
+        },
+        {
+          _id: 'bangle-cnc-main',
+          name: 'Bangle CNC Cutting Machine',
+          description: 'Leading Manufacturer of Bangle CNC Cutting Machine with high precision cutting technology.',
+          price: 105000,
+          image: '/images/bangle-cnc-main.png',
+          category: 'bangle-cnc-cutting',
+          categoryName: 'Bangle CNC Cutting'
+        }
+      ];
+    }
     
     res.json({
       success: true,
@@ -85,6 +128,57 @@ app.get('/api/products', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching products',
+      error: error.message
+    });
+  }
+});
+
+// Featured products API endpoint - must come before /:id route
+app.get('/api/products/featured', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 8;
+    let products;
+    
+    try {
+      products = await Product.find({ isActive: true, isFeatured: true })
+        .limit(limit)
+        .sort({ createdAt: -1 });
+    } catch (dbError) {
+      // If database error, use mock featured products
+      products = [
+        {
+          _id: 'cnc-9axis',
+          name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
+          description: 'High-precision 9-axis CNC machine with automatic tool changing capability.',
+          price: 250000,
+          image: '/images/cnc-9axis-main.png',
+          category: 'cnc-machines',
+          categoryName: 'CNC Machines',
+          isFeatured: true
+        },
+        {
+          _id: 'bangle-cnc-main',
+          name: 'Bangle CNC Cutting Machine',
+          description: 'Leading Manufacturer of Bangle CNC Cutting Machine with high precision cutting technology.',
+          price: 105000,
+          image: '/images/bangle-cnc-main.png',
+          category: 'bangle-cnc-cutting',
+          categoryName: 'Bangle CNC Cutting',
+          isFeatured: true
+        }
+      ].slice(0, limit);
+    }
+
+    res.json({
+      success: true,
+      data: products,
+      message: 'Featured products fetched successfully'
+    });
+  } catch (error) {
+    console.error('Error fetching featured products:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching featured products',
       error: error.message
     });
   }

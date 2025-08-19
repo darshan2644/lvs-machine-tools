@@ -1,8 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useShoppingCart } from '../hooks/useShoppingCart';
+import { addToCart, buyNow } from '../services/cartService';
 import './ProductsPage.css';
+
+// Sample products moved outside component to avoid dependency issues
+const sampleProducts = [
+  {
+    _id: 'cnc-9axis',
+    name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
+    description: 'High-precision 9-axis CNC machine with automatic tool changing capability for universal cutting and engraving operations.',
+    price: 250000,
+    image: '/images/cnc-9axis-main.png',
+    category: 'cnc-machines',
+    categoryName: 'CNC Machines'
+  },
+  {
+    _id: 'bangle-cnc-main',
+    name: 'Bangle CNC Cutting Machine',
+    description: 'Leading Manufacturer of Bangle CNC Cutting Machine with high precision cutting technology for jewelry manufacturing.',
+    price: 105000,
+    image: '/images/bangle-cnc-main.png',
+    category: 'bangle-cnc-cutting',
+    categoryName: 'Bangle CNC Cutting'
+  },
+  {
+    _id: 'cnc-bangle-standard',
+    name: 'CNC Bangle Cutting Machine',
+    description: 'Professional CNC bangle cutting machine for precision jewelry manufacturing with standard model specifications.',
+    price: 95000,
+    image: '/images/cnc-bangle-main.png',
+    category: 'bangle-cnc-cutting',
+    categoryName: 'Bangle CNC Cutting'
+  }
+];
 
 const ProductsPage = () => {
   const navigate = useNavigate();
@@ -12,107 +43,59 @@ const ProductsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchParams] = useSearchParams();
-  const { addToCart } = useShoppingCart();
   
-  // Get cart items from localStorage to show cart count
-  const [cartItemsCount, setCartItemsCount] = useState(0);
-  
-  useEffect(() => {
-    const updateCartCount = () => {
-      const savedCart = localStorage.getItem('lvsCart');
-      if (savedCart) {
-        const cartItems = JSON.parse(savedCart);
-        const totalCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-        setCartItemsCount(totalCount);
-      } else {
-        setCartItemsCount(0);
-      }
-    };
-    
-    // Update count on page load
-    updateCartCount();
-    
-    // Listen for storage changes (when cart is updated)
-    window.addEventListener('storage', updateCartCount);
-    
-    // Listen for custom addToCart events
-    const handleAddToCart = () => updateCartCount();
-    window.addEventListener('addToCart', handleAddToCart);
-    
-    return () => {
-      window.removeEventListener('storage', updateCartCount);
-      window.removeEventListener('addToCart', handleAddToCart);
-    };
-  }, []);
-
-  // Sample products for demonstration
-  const sampleProducts = [
-    {
-      _id: 'cnc-9axis',
-      name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
-      description: 'High-precision 9-axis CNC machine with automatic tool changing capability for universal cutting and engraving operations.',
-      price: 250000,
-      image: '/images/cnc-9axis-main.png',
-      category: 'cnc-machines',
-      categoryName: 'CNC Machines'
-    },
-    {
-      _id: 'bangle-cnc-main',
-      name: 'Bangle CNC Cutting Machine',
-      description: 'Leading Manufacturer of Bangle CNC Cutting Machine with high precision cutting technology for jewelry manufacturing.',
-      price: 105000,
-      image: '/images/bangle-cnc-main.png',
-      category: 'bangle-cnc-cutting',
-      categoryName: 'Bangle CNC Cutting'
-    },
-    {
-      _id: 'cnc-bangle-standard',
-      name: 'CNC Bangle Cutting Machine',
-      description: 'Professional CNC bangle cutting machine for precision jewelry manufacturing with standard model specifications.',
-      price: 95000,
-      image: '/images/cnc-bangle-main.png',
-      category: 'bangle-cnc-cutting',
-      categoryName: 'Bangle CNC Cutting'
-    }
-  ];
-
   // Function to handle add to cart
-  const handleAddToCart = (product) => {
-    addToCart(product);
-    // Show feedback
-    const feedback = document.createElement('div');
-    feedback.className = 'fixed top-4 right-4 bg-yellow-400 text-black px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300';
-    feedback.innerHTML = `
-      <div class="flex items-center space-x-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        <span class="font-semibold">Added to cart!</span>
-      </div>
-    `;
-    
-    document.body.appendChild(feedback);
-    
-    setTimeout(() => {
-      feedback.style.transform = 'translateX(400px)';
-      setTimeout(() => {
-        if (document.body.contains(feedback)) {
-          document.body.removeChild(feedback);
-        }
-      }, 300);
-    }, 2000);
+  const handleAddToCart = async (product) => {
+    try {
+      const result = await addToCart(product._id, 1, product.price);
+      if (result.success) {
+        // Show success feedback
+        const feedback = document.createElement('div');
+        feedback.className = 'fixed top-4 right-4 bg-yellow-400 text-black px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300';
+        feedback.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="font-semibold">Added to cart!</span>
+          </div>
+        `;
+        
+        document.body.appendChild(feedback);
+        
+        setTimeout(() => {
+          feedback.style.transform = 'translateX(400px)';
+          setTimeout(() => {
+            if (document.body.contains(feedback)) {
+              document.body.removeChild(feedback);
+            }
+          }, 300);
+        }, 2000);
+      } else {
+        alert(result.message || 'Failed to add to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add to cart');
+    }
   };
 
-  useEffect(() => {
-    fetchData();
-    // Set initial category from URL parameters
-    const categoryParam = searchParams.get('category');
-    if (categoryParam) {
-      setSelectedCategory(categoryParam);
+  // Function to handle buy now
+  const handleBuyNow = async (product) => {
+    try {
+      const result = await buyNow(product._id, 1, product.price);
+      if (result.success) {
+        navigate(`/order-tracking/${result.orderId}`);
+      } else {
+        alert(result.message || 'Failed to place order');
+      }
+    } catch (error) {
+      console.error('Error in buy now:', error);
+      alert('Failed to place order');
     }
-  }, [searchParams]);
+  };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -139,7 +122,7 @@ const ProductsPage = () => {
         if (categoriesRes.data.data) {
           allCategories = [...allCategories, ...categoriesRes.data.data];
         }
-      } catch (backendError) {
+      } catch {
         console.log('Backend not available, using sample products only');
       }
       
@@ -156,7 +139,16 @@ const ProductsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    // Set initial category from URL parameters
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams, fetchData]);
 
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
@@ -248,14 +240,21 @@ const ProductsPage = () => {
                   <div className="product-actions">
                     <button 
                       className="btn btn-primary"
-                      onClick={() => navigate('/checkout')}
+                      onClick={() => handleBuyNow({
+                        _id: '68a4a5d12c779915538996a7',
+                        name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
+                        price: 250000,
+                        image: '/images/cnc-9axis-main.png',
+                        category: 'CNC Machines',
+                        brand: 'LVS'
+                      })}
                     >
                       Buy Now
                     </button>
                     <button 
                       className="btn btn-secondary"
                       onClick={() => handleAddToCart({
-                        id: 'cnc-9axis',
+                        _id: '68a4a5d12c779915538996a7',
                         name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
                         price: 250000,
                         image: '/images/cnc-9axis-main.png',
@@ -287,14 +286,21 @@ const ProductsPage = () => {
                   <div className="product-actions">
                     <button 
                       className="btn btn-primary"
-                      onClick={() => navigate('/checkout')}
+                      onClick={() => handleBuyNow({
+                        _id: '68a4a5d12c779915538996a8',
+                        name: 'Bangle CNC Cutting Machine',
+                        price: 105000,
+                        image: '/images/bangle-cnc-main.png',
+                        category: 'Bangle CNC Cutting',
+                        brand: 'LVS'
+                      })}
                     >
                       Buy Now
                     </button>
                     <button 
                       className="btn btn-secondary"
                       onClick={() => handleAddToCart({
-                        id: 'bangle-cnc-main',
+                        _id: '68a4a5d12c779915538996a8',
                         name: 'Bangle CNC Cutting Machine',
                         price: 105000,
                         image: '/images/bangle-cnc-main.png',
@@ -325,14 +331,21 @@ const ProductsPage = () => {
                   <div className="product-actions">
                     <button 
                       className="btn btn-primary"
-                      onClick={() => navigate('/checkout')}
+                      onClick={() => handleBuyNow({
+                        _id: '68a4a5d12c779915538996a9',
+                        name: 'CNC Bangle Cutting Machine',
+                        price: 95000,
+                        image: '/images/cnc-bangle-main.png',
+                        category: 'Bangle CNC Cutting',
+                        brand: 'LVS'
+                      })}
                     >
                       Buy Now
                     </button>
                     <button 
                       className="btn btn-secondary"
                       onClick={() => handleAddToCart({
-                        id: 'cnc-bangle-standard',
+                        _id: '68a4a5d12c779915538996a9',
                         name: 'CNC Bangle Cutting Machine',
                         price: 95000,
                         image: '/images/cnc-bangle-main.png',
@@ -366,14 +379,21 @@ const ProductsPage = () => {
                     <div className="product-actions">
                       <button 
                         className="btn btn-primary"
-                        onClick={() => navigate('/checkout')}
+                        onClick={() => handleBuyNow({
+                          _id: product._id,
+                          name: product.name,
+                          price: product.price || 0,
+                          image: product.image,
+                          category: product.categoryName,
+                          brand: 'LVS'
+                        })}
                       >
                         Buy Now
                       </button>
                       <button 
                         className="btn btn-secondary"
                         onClick={() => handleAddToCart({
-                          id: product._id,
+                          _id: product._id,
                           name: product.name,
                           price: product.price || 0,
                           image: product.image,
@@ -391,22 +411,6 @@ const ProductsPage = () => {
           )}
         </div>
       </section>
-
-      {/* Floating View Cart Button */}
-      {cartItemsCount > 0 && (
-        <div className="floating-cart-btn" onClick={() => navigate('/cart')}>
-          <svg className="cart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="m1 1 4 4 16 10H6L3 8H1z"></path>
-            <path d="m9 13 3-3 3 3"></path>
-          </svg>
-          <div className="cart-info">
-            <span className="cart-text">View Cart</span>
-            <span className="cart-count">{cartItemsCount}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
