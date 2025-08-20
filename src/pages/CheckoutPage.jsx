@@ -267,13 +267,8 @@ const CheckoutPage = () => {
       return;
     }
 
-    // Basic form validation - only check essential fields
-    if (!customerInfo.firstName) {
-      alert('Please enter your first name');
-      return;
-    }
-    if (!customerInfo.email) {
-      alert('Please enter your email');
+    // Full form validation
+    if (!validateForm()) {
       return;
     }
 
@@ -308,149 +303,292 @@ const CheckoutPage = () => {
 
   const processCOD = async () => {
     console.log('Processing COD order...');
-    const orderId = generateOrderId();
-    console.log('Generated order ID:', orderId);
-    
-    const orderData = {
-      orderId,
-      customerName: `${customerInfo.firstName || 'John'} ${customerInfo.lastName || 'Doe'}`,
-      customerEmail: customerInfo.email || 'customer@example.com',
-      customerPhone: customerInfo.phone || '1234567890',
-      items: cartItems,
-      totalAmount: calculations.grandTotal,
-      deliveryAddress: customerInfo,
-      deliveryDate,
-      paymentMethod: 'Cash on Delivery',
-      orderStatus: 'Confirmed',
-      orderDate: new Date().toISOString(),
-      trackingNumber: `LVS-COD-${Date.now()}`,
-      estimatedDelivery: deliveryDate || 'Within 7-10 business days'
-    };
-
-    console.log('Order data:', orderData);
-
-    const orderSaved = await saveOrder(orderData);
-    console.log('Order saved:', orderSaved);
-    
-    if (orderSaved) {
+    try {
+      const userId = localStorage.getItem('userId') || 'guest-' + Date.now();
+      
+      // Format items for backend
+      const formattedItems = cartItems.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price
+      }));
+      
+      // Calculate totals for backend
+      const subtotal = calculations.subtotal;
+      const tax = calculations.cgst + calculations.sgst;
+      const shippingCost = calculations.shipping;
+      
+      // Call backend API directly
+      const response = await fetch('http://localhost:5000/api/orders/place', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          items: formattedItems,
+          totalPrice: calculations.grandTotal,
+          tax,
+          shippingCost,
+          paymentMethod: 'cod',
+          shippingAddress: {
+            firstName: customerInfo.firstName,
+            lastName: customerInfo.lastName,
+            email: customerInfo.email,
+            phone: customerInfo.phone,
+            company: customerInfo.company || '',
+            address: customerInfo.address,
+            city: customerInfo.city,
+            state: customerInfo.state,
+            pincode: customerInfo.pincode,
+            country: customerInfo.country
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('Order placed successfully:', responseData);
+      
+      // Store order information in localStorage
+      const orderData = {
+        orderId: responseData.order._id,
+        trackingNumber: responseData.order.trackingNumber,
+        orderStatus: responseData.order.orderStatus,
+        orderDate: responseData.order.createdAt
+      };
+      
+      localStorage.setItem('lvsLastOrder', JSON.stringify(orderData));
+      
+      // Clear cart and navigate to order confirmation
       clearCart();
-      navigate('/'); // Redirect to home after placing order
-    } else {
-      throw new Error('Failed to save order');
+      navigate(`/order-tracking/${responseData.order._id}`);
+    } catch (error) {
+      console.error('Error processing COD order:', error);
+      alert('There was a problem placing your order. Please try again.');
     }
   };
 
   const processCard = async () => {
-    const orderId = generateOrderId();
-    
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const orderData = {
-      orderId,
-      customerName: `${customerInfo.firstName} ${customerInfo.lastName}`,
-      customerEmail: customerInfo.email,
-      customerPhone: customerInfo.phone,
-      items: cartItems,
-      totalAmount: calculations.grandTotal,
-      deliveryAddress: customerInfo,
-      deliveryDate,
-      paymentMethod: 'Credit/Debit Card',
-      orderStatus: 'Paid',
-      orderDate: new Date().toISOString(),
-      cardLastFour: cardInfo.cardNumber.slice(-4),
-      trackingNumber: `LVS-CARD-${Date.now()}`,
-      estimatedDelivery: deliveryDate || 'Within 5-7 business days',
-      paymentId: `PAY_${Date.now()}`
-    };
-
-    const orderSaved = await saveOrder(orderData);
-    if (orderSaved) {
+    try {
+      const userId = localStorage.getItem('userId') || 'guest-' + Date.now();
+      
+      // Simulate card payment processing
+      setIsProcessing(true);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Format items for backend
+      const formattedItems = cartItems.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price
+      }));
+      
+      // Calculate totals for backend
+      const tax = calculations.cgst + calculations.sgst;
+      const shippingCost = calculations.shipping;
+      
+      // Generate payment ID
+      const paymentId = `CARD_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+      
+      // Call backend API directly
+      const response = await fetch('http://localhost:5000/api/orders/place', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          items: formattedItems,
+          totalPrice: calculations.grandTotal,
+          tax,
+          shippingCost,
+          paymentMethod: 'card',
+          paymentStatus: 'success', // Card payment is considered successful for demo
+          razorpayPaymentId: paymentId,
+          shippingAddress: {
+            firstName: customerInfo.firstName,
+            lastName: customerInfo.lastName,
+            email: customerInfo.email,
+            phone: customerInfo.phone,
+            company: customerInfo.company || '',
+            address: customerInfo.address,
+            city: customerInfo.city,
+            state: customerInfo.state,
+            pincode: customerInfo.pincode,
+            country: customerInfo.country
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('Card payment successful:', responseData);
+      
+      // Store order information in localStorage
+      const orderData = {
+        orderId: responseData.order._id,
+        trackingNumber: responseData.order.trackingNumber,
+        orderStatus: responseData.order.orderStatus,
+        orderDate: responseData.order.createdAt,
+        paymentMethod: 'Credit/Debit Card',
+        cardLastFour: cardInfo.cardNumber.slice(-4)
+      };
+      
+      localStorage.setItem('lvsLastOrder', JSON.stringify(orderData));
+      
+      // Clear cart and navigate to order tracking
       clearCart();
-      navigate('/');
-    } else {
-      throw new Error('Failed to save order');
+      navigate(`/order-tracking/${responseData.order._id}`);
+    } catch (error) {
+      console.error('Error processing card payment:', error);
+      alert('There was a problem processing your payment. Please try again.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const processRazorpay = async () => {
-    const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
-    
-    if (!razorpayKey) {
-      alert('Razorpay is not configured. Please contact support or use another payment method.');
-      return;
-    }
-
-    if (!window.Razorpay) {
-      alert('Razorpay SDK not loaded. Please refresh the page and try again.');
-      return;
-    }
-
-    const orderId = generateOrderId();
-    const orderData = {
-      orderId,
-      customerName: `${customerInfo.firstName} ${customerInfo.lastName}`,
-      customerEmail: customerInfo.email,
-      customerPhone: customerInfo.phone,
-      items: cartItems,
-      totalAmount: calculations.grandTotal,
-      deliveryAddress: customerInfo,
-      deliveryDate,
-      paymentMethod: 'Razorpay (UPI/Cards/Wallets)',
-      orderDate: new Date().toISOString(),
-      trackingNumber: `LVS-RZP-${Date.now()}`,
-      estimatedDelivery: deliveryDate || 'Within 5-7 business days'
-    };
-
-    const options = {
-      key: razorpayKey,
-      amount: Math.round(calculations.grandTotal * 100), // Amount in paisa
-      currency: 'INR',
-      name: 'LVS Machine & Tools',
-      description: `Order #${orderId} - CNC Machines & Tools`,
-      image: '/images/lvs-logo.png',
-      order_id: orderId,
-      handler: async (response) => {
-        try {
-          console.log('Payment successful:', response);
-          const finalOrderData = {
-            ...orderData,
-            orderStatus: 'Paid',
-            razorpayPaymentId: response.razorpay_payment_id,
-            razorpayOrderId: response.razorpay_order_id,
-            razorpaySignature: response.razorpay_signature
-          };
-          
-          const orderSaved = await saveOrder(finalOrderData);
-          if (orderSaved) {
-            clearCart();
-            navigate('/');
-          } else {
-            alert('Payment successful but error saving order. Please contact support with Payment ID: ' + response.razorpay_payment_id);
-          }
-        } catch (error) {
-          console.error('Error processing payment:', error);
-          alert('Payment successful but error processing order. Please contact support.');
-        }
-      },
-      prefill: {
-        name: `${customerInfo.firstName} ${customerInfo.lastName}`,
-        email: customerInfo.email,
-        contact: customerInfo.phone
-      },
-      notes: {
-        order_id: orderId,
-        customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`
-      },
-      theme: {
-        color: '#FFD700'
-      }
-    };
-
     try {
+      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      
+      if (!razorpayKey) {
+        alert('Razorpay is not configured. Please contact support or use another payment method.');
+        return;
+      }
+  
+      if (!window.Razorpay) {
+        alert('Razorpay SDK not loaded. Please refresh the page and try again.');
+        return;
+      }
+  
+      const userId = localStorage.getItem('userId') || 'guest-' + Date.now();
+      
+      // Format items for backend
+      const formattedItems = cartItems.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price
+      }));
+      
+      // Calculate totals for backend
+      const tax = calculations.cgst + calculations.sgst;
+      const shippingCost = calculations.shipping;
+      
+      // First create an order in the backend
+      const orderResponse = await fetch('http://localhost:5000/api/orders/place', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          items: formattedItems,
+          totalPrice: calculations.grandTotal,
+          tax,
+          shippingCost,
+          paymentMethod: 'razorpay',
+          shippingAddress: {
+            firstName: customerInfo.firstName,
+            lastName: customerInfo.lastName,
+            email: customerInfo.email,
+            phone: customerInfo.phone,
+            company: customerInfo.company || '',
+            address: customerInfo.address,
+            city: customerInfo.city,
+            state: customerInfo.state,
+            pincode: customerInfo.pincode,
+            country: customerInfo.country
+          }
+        })
+      });
+      
+      if (!orderResponse.ok) {
+        throw new Error(`Server responded with ${orderResponse.status}`);
+      }
+      
+      const orderResponseData = await orderResponse.json();
+      console.log('Razorpay order created:', orderResponseData);
+      
+      if (!orderResponseData.razorpayOrderId) {
+        throw new Error('No Razorpay order ID received from server');
+      }
+      
+      // Initialize Razorpay checkout
+      const options = {
+        key: razorpayKey,
+        amount: Math.round(calculations.grandTotal * 100), // Amount in paisa
+        currency: 'INR',
+        name: 'LVS Machine & Tools',
+        description: `Order - CNC Machines & Tools`,
+        image: '/images/lvs-logo.png',
+        order_id: orderResponseData.razorpayOrderId,
+        handler: async (response) => {
+          try {
+            console.log('Payment successful:', response);
+            
+            // Update the order with payment details
+            const paymentUpdateResponse = await fetch(`http://localhost:5000/api/orders/update-payment/${orderResponseData.order._id}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+                paymentStatus: 'success'
+              })
+            });
+            
+            if (!paymentUpdateResponse.ok) {
+              throw new Error(`Failed to update payment status: ${paymentUpdateResponse.statusText}`);
+            }
+            
+            const paymentUpdateResult = await paymentUpdateResponse.json();
+            console.log('Payment status updated:', paymentUpdateResult);
+            
+            // Store order information in localStorage
+            const orderData = {
+              orderId: orderResponseData.order._id,
+              trackingNumber: orderResponseData.order.trackingNumber,
+              paymentId: response.razorpay_payment_id,
+              orderStatus: 'Paid'
+            };
+            
+            localStorage.setItem('lvsLastOrder', JSON.stringify(orderData));
+            
+            // Clear cart and navigate to order tracking
+            clearCart();
+            navigate(`/order-tracking/${orderResponseData.order._id}`);
+          } catch (error) {
+            console.error('Error processing Razorpay payment:', error);
+            alert('Payment successful but error processing order. Please contact support with Payment ID: ' + response.razorpay_payment_id);
+          }
+        },
+        prefill: {
+          name: `${customerInfo.firstName} ${customerInfo.lastName}`,
+          email: customerInfo.email,
+          contact: customerInfo.phone
+        },
+        notes: {
+          order_id: orderResponseData.order._id,
+          customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`
+        },
+        theme: {
+          color: '#3399cc'
+        }
+      };
+      
+      // Open Razorpay payment form
       const razorpay = new window.Razorpay(options);
       
-      razorpay.on('payment.failed', function (response) {
+      razorpay.on('payment.failed', function(response) {
         console.error('Payment failed:', response.error);
         alert(`Payment failed: ${response.error.description || 'Unknown error occurred'}\nPlease try again or use another payment method.`);
       });
