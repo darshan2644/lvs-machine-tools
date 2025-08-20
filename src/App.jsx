@@ -17,6 +17,7 @@ import CNCBangleMR5Page from './pages/CNCBangleMR5Page';
 import BangleCuttingSemiAutoPage from './pages/BangleCuttingSemiAutoPage';
 import CNCBangleCategoryPage from './pages/CNCBangleCategoryPage';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 import OrderTrackingPage from './pages/OrderTrackingPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
@@ -45,6 +46,7 @@ function App() {
               <Route path="/bangle-cutting-semi-auto" element={<BangleCuttingSemiAutoPage />} />
               <Route path="/cnc-bangle-category" element={<CNCBangleCategoryPage />} />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/order-tracking/:orderId" element={<OrderTrackingPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />

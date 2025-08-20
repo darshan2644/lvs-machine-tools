@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShoppingCart } from '../hooks/useShoppingCart';
@@ -5,10 +6,46 @@ import './CheckoutPage.css';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cartItems, getTotalPrice, clearCart } = useShoppingCart();
+  const { cartItems: hookCartItems, getTotalPrice, clearCart } = useShoppingCart();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [showCardForm, setShowCardForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  
+  // Debug environment variables
+  console.log('Environment variables check:');
+  console.log('VITE_RAZORPAY_KEY_ID:', import.meta.env.VITE_RAZORPAY_KEY_ID);
+  console.log('All env vars:', import.meta.env);
+  console.log('Razorpay SDK loaded:', !!window.Razorpay);
+  
+  // Load cart items from hook or localStorage
+  useEffect(() => {
+    console.log('Loading cart items...');
+    console.log('Hook cart items:', hookCartItems);
+    
+    if (hookCartItems && hookCartItems.length > 0) {
+      console.log('Using cart items from hook');
+      setCartItems(hookCartItems);
+    } else {
+      // Fallback to localStorage if hook is empty
+      const savedCartItems = localStorage.getItem('lvsCartItems');
+      console.log('Saved cart items from localStorage:', savedCartItems);
+      
+      if (savedCartItems) {
+        try {
+          const parsedItems = JSON.parse(savedCartItems);
+          console.log('Using cart items from localStorage:', parsedItems);
+          setCartItems(parsedItems);
+        } catch (error) {
+          console.error('Error parsing cart items from localStorage:', error);
+          setCartItems([]);
+        }
+      } else {
+        console.log('No cart items found');
+        setCartItems([]);
+      }
+    }
+  }, [hookCartItems]);
   
   const [calculations, setCalculations] = useState({
     subtotal: 0,
@@ -44,6 +81,11 @@ const CheckoutPage = () => {
   useEffect(() => {
     const deliveryInfo = localStorage.getItem('lvsDeliveryInfo');
     const selectedAddress = localStorage.getItem('lvsSelectedAddress');
+    const savedCartItems = localStorage.getItem('lvsCartItems');
+    
+    console.log('Loading checkout data from localStorage:');
+    console.log('Cart items from hook:', cartItems);
+    console.log('Saved cart items:', savedCartItems);
     
     if (deliveryInfo) {
       try {
@@ -71,12 +113,19 @@ const CheckoutPage = () => {
         console.warn('Failed to parse selected address:', error);
       }
     }
-  }, []);
+  }, [cartItems]); // Added cartItems dependency
 
   // Calculate totals
   useEffect(() => {
+    // Calculate total price from cart items
+    const getLocalTotalPrice = () => {
+      return cartItems.reduce((total, item) => {
+        return total + (item.price * item.quantity);
+      }, 0);
+    };
+
     const calculateTotals = () => {
-      const subtotal = getTotalPrice();
+      const subtotal = getLocalTotalPrice();
       const cgst = subtotal * 0.09; // 9% CGST
       const sgst = subtotal * 0.09; // 9% SGST
       const shipping = subtotal >= 100000 ? 0 : 50; // Free shipping above ₹1,00,000
@@ -92,7 +141,7 @@ const CheckoutPage = () => {
     };
 
     calculateTotals();
-  }, [cartItems, getTotalPrice]);
+  }, [cartItems]); // Removed getTotalPrice dependency
 
   // Format currency
   const formatCurrency = (amount) => {
@@ -267,8 +316,13 @@ const CheckoutPage = () => {
       return;
     }
 
-    // Full form validation
-    if (!validateForm()) {
+    // Basic form validation - only check essential fields
+    if (!customerInfo.firstName) {
+      alert('Please enter your first name');
+      return;
+    }
+    if (!customerInfo.email) {
+      alert('Please enter your email');
       return;
     }
 
@@ -288,6 +342,8 @@ const CheckoutPage = () => {
           await processCard();
           break;
         case 'razorpay':
+          console.log('Razorpay payment method selected');
+          alert('Testing Razorpay payment - check console for details');
           await processRazorpay();
           break;
         default:
@@ -303,301 +359,197 @@ const CheckoutPage = () => {
 
   const processCOD = async () => {
     console.log('Processing COD order...');
-    try {
-      const userId = localStorage.getItem('userId') || 'guest-' + Date.now();
-      
-      // Format items for backend
-      const formattedItems = cartItems.map(item => ({
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.price
-      }));
-      
-      // Calculate totals for backend
-      const subtotal = calculations.subtotal;
-      const tax = calculations.cgst + calculations.sgst;
-      const shippingCost = calculations.shipping;
-      
-      // Call backend API directly
-      const response = await fetch('http://localhost:5000/api/orders/place', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          items: formattedItems,
-          totalPrice: calculations.grandTotal,
-          tax,
-          shippingCost,
-          paymentMethod: 'cod',
-          shippingAddress: {
-            firstName: customerInfo.firstName,
-            lastName: customerInfo.lastName,
-            email: customerInfo.email,
-            phone: customerInfo.phone,
-            company: customerInfo.company || '',
-            address: customerInfo.address,
-            city: customerInfo.city,
-            state: customerInfo.state,
-            pincode: customerInfo.pincode,
-            country: customerInfo.country
-          }
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
-      }
-      
-      const responseData = await response.json();
-      console.log('Order placed successfully:', responseData);
-      
-      // Store order information in localStorage
-      const orderData = {
-        orderId: responseData.order._id,
-        trackingNumber: responseData.order.trackingNumber,
-        orderStatus: responseData.order.orderStatus,
-        orderDate: responseData.order.createdAt
-      };
-      
-      localStorage.setItem('lvsLastOrder', JSON.stringify(orderData));
-      
-      // Clear cart and navigate to order confirmation
+    const orderId = generateOrderId();
+    console.log('Generated order ID:', orderId);
+    
+    const orderData = {
+      orderId,
+      customerName: `${customerInfo.firstName || 'John'} ${customerInfo.lastName || 'Doe'}`,
+      customerEmail: customerInfo.email || 'customer@example.com',
+      customerPhone: customerInfo.phone || '1234567890',
+      items: cartItems,
+      totalAmount: calculations.grandTotal,
+      deliveryAddress: customerInfo,
+      deliveryDate,
+      paymentMethod: 'Cash on Delivery',
+      orderStatus: 'Confirmed',
+      orderDate: new Date().toISOString(),
+      trackingNumber: `LVS-COD-${Date.now()}`,
+      estimatedDelivery: deliveryDate || 'Within 7-10 business days'
+    };
+
+    console.log('Order data:', orderData);
+
+    const orderSaved = await saveOrder(orderData);
+    console.log('Order saved:', orderSaved);
+    
+    if (orderSaved) {
       clearCart();
-      navigate(`/order-tracking/${responseData.order._id}`);
-    } catch (error) {
-      console.error('Error processing COD order:', error);
-      alert('There was a problem placing your order. Please try again.');
+      navigate('/'); // Redirect to home after placing order
+    } else {
+      throw new Error('Failed to save order');
     }
   };
 
   const processCard = async () => {
-    try {
-      const userId = localStorage.getItem('userId') || 'guest-' + Date.now();
-      
-      // Simulate card payment processing
-      setIsProcessing(true);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Format items for backend
-      const formattedItems = cartItems.map(item => ({
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.price
-      }));
-      
-      // Calculate totals for backend
-      const tax = calculations.cgst + calculations.sgst;
-      const shippingCost = calculations.shipping;
-      
-      // Generate payment ID
-      const paymentId = `CARD_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-      
-      // Call backend API directly
-      const response = await fetch('http://localhost:5000/api/orders/place', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          items: formattedItems,
-          totalPrice: calculations.grandTotal,
-          tax,
-          shippingCost,
-          paymentMethod: 'card',
-          paymentStatus: 'success', // Card payment is considered successful for demo
-          razorpayPaymentId: paymentId,
-          shippingAddress: {
-            firstName: customerInfo.firstName,
-            lastName: customerInfo.lastName,
-            email: customerInfo.email,
-            phone: customerInfo.phone,
-            company: customerInfo.company || '',
-            address: customerInfo.address,
-            city: customerInfo.city,
-            state: customerInfo.state,
-            pincode: customerInfo.pincode,
-            country: customerInfo.country
-          }
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
-      }
-      
-      const responseData = await response.json();
-      console.log('Card payment successful:', responseData);
-      
-      // Store order information in localStorage
-      const orderData = {
-        orderId: responseData.order._id,
-        trackingNumber: responseData.order.trackingNumber,
-        orderStatus: responseData.order.orderStatus,
-        orderDate: responseData.order.createdAt,
-        paymentMethod: 'Credit/Debit Card',
-        cardLastFour: cardInfo.cardNumber.slice(-4)
-      };
-      
-      localStorage.setItem('lvsLastOrder', JSON.stringify(orderData));
-      
-      // Clear cart and navigate to order tracking
+    const orderId = generateOrderId();
+    
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const orderData = {
+      orderId,
+      customerName: `${customerInfo.firstName} ${customerInfo.lastName}`,
+      customerEmail: customerInfo.email,
+      customerPhone: customerInfo.phone,
+      items: cartItems,
+      totalAmount: calculations.grandTotal,
+      deliveryAddress: customerInfo,
+      deliveryDate,
+      paymentMethod: 'Credit/Debit Card',
+      orderStatus: 'Paid',
+      orderDate: new Date().toISOString(),
+      cardLastFour: cardInfo.cardNumber.slice(-4),
+      trackingNumber: `LVS-CARD-${Date.now()}`,
+      estimatedDelivery: deliveryDate || 'Within 5-7 business days',
+      paymentId: `PAY_${Date.now()}`
+    };
+
+    const orderSaved = await saveOrder(orderData);
+    if (orderSaved) {
       clearCart();
-      navigate(`/order-tracking/${responseData.order._id}`);
-    } catch (error) {
-      console.error('Error processing card payment:', error);
-      alert('There was a problem processing your payment. Please try again.');
-    } finally {
-      setIsProcessing(false);
+      navigate('/');
+    } else {
+      throw new Error('Failed to save order');
     }
   };
 
   const processRazorpay = async () => {
+    console.log('processRazorpay called');
+    
+    // Set some default customer info for testing
+    const testCustomerInfo = {
+      firstName: customerInfo.firstName || 'Test',
+      lastName: customerInfo.lastName || 'User', 
+      email: customerInfo.email || 'test@example.com',
+      phone: customerInfo.phone || '9999999999',
+      address: customerInfo.address || 'Test Address',
+      city: customerInfo.city || 'Test City',
+      state: customerInfo.state || 'Test State',
+      pincode: customerInfo.pincode || '123456'
+    };
+    
+    const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+    console.log('Razorpay key:', razorpayKey);
+    
+    if (!razorpayKey) {
+      console.error('Razorpay key not found in environment variables');
+      alert('Razorpay is not configured. Please contact support or use another payment method.');
+      setIsProcessing(false);
+      return;
+    }
+
+    console.log('Checking if Razorpay SDK is loaded...');
+    if (!window.Razorpay) {
+      console.error('Razorpay SDK not found on window object');
+      alert('Razorpay SDK not loaded. Please refresh the page and try again.');
+      setIsProcessing(false);
+      return;
+    }
+    console.log('Razorpay SDK found:', window.Razorpay);
+
     try {
-      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
-      
-      if (!razorpayKey) {
-        alert('Razorpay is not configured. Please contact support or use another payment method.');
-        return;
-      }
-  
-      if (!window.Razorpay) {
-        alert('Razorpay SDK not loaded. Please refresh the page and try again.');
-        return;
-      }
-  
-      const userId = localStorage.getItem('userId') || 'guest-' + Date.now();
-      
-      // Format items for backend
-      const formattedItems = cartItems.map(item => ({
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.price
-      }));
-      
-      // Calculate totals for backend
-      const tax = calculations.cgst + calculations.sgst;
-      const shippingCost = calculations.shipping;
-      
-      // First create an order in the backend
-      const orderResponse = await fetch('http://localhost:5000/api/orders/place', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          items: formattedItems,
-          totalPrice: calculations.grandTotal,
-          tax,
-          shippingCost,
-          paymentMethod: 'razorpay',
-          shippingAddress: {
-            firstName: customerInfo.firstName,
-            lastName: customerInfo.lastName,
-            email: customerInfo.email,
-            phone: customerInfo.phone,
-            company: customerInfo.company || '',
-            address: customerInfo.address,
-            city: customerInfo.city,
-            state: customerInfo.state,
-            pincode: customerInfo.pincode,
-            country: customerInfo.country
-          }
-        })
-      });
-      
-      if (!orderResponse.ok) {
-        throw new Error(`Server responded with ${orderResponse.status}`);
-      }
-      
-      const orderResponseData = await orderResponse.json();
-      console.log('Razorpay order created:', orderResponseData);
-      
-      if (!orderResponseData.razorpayOrderId) {
-        throw new Error('No Razorpay order ID received from server');
-      }
-      
-      // Initialize Razorpay checkout
+      const orderId = generateOrderId();
+      console.log('Generated order ID:', orderId);
+
+      // Prepare order data for our system
+      const localOrderData = {
+        orderId,
+        customerName: `${testCustomerInfo.firstName} ${testCustomerInfo.lastName}`,
+        customerEmail: testCustomerInfo.email,
+        customerPhone: testCustomerInfo.phone,
+        items: cartItems,
+        totalAmount: calculations.grandTotal,
+        deliveryAddress: testCustomerInfo,
+        deliveryDate,
+        paymentMethod: 'Razorpay (UPI/Cards/Wallets)',
+        orderDate: new Date().toISOString(),
+        trackingNumber: `LVS-RZP-${Date.now()}`,
+        estimatedDelivery: deliveryDate || 'Within 5-7 business days'
+      };
+
       const options = {
         key: razorpayKey,
         amount: Math.round(calculations.grandTotal * 100), // Amount in paisa
         currency: 'INR',
         name: 'LVS Machine & Tools',
-        description: `Order - CNC Machines & Tools`,
+        description: `Order #${orderId} - CNC Machines & Tools`,
         image: '/images/lvs-logo.png',
-        order_id: orderResponseData.razorpayOrderId,
         handler: async (response) => {
           try {
             console.log('Payment successful:', response);
             
-            // Update the order with payment details
-            const paymentUpdateResponse = await fetch(`http://localhost:5000/api/orders/update-payment/${orderResponseData.order._id}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-                paymentStatus: 'success'
-              })
-            });
-            
-            if (!paymentUpdateResponse.ok) {
-              throw new Error(`Failed to update payment status: ${paymentUpdateResponse.statusText}`);
-            }
-            
-            const paymentUpdateResult = await paymentUpdateResponse.json();
-            console.log('Payment status updated:', paymentUpdateResult);
-            
-            // Store order information in localStorage
-            const orderData = {
-              orderId: orderResponseData.order._id,
-              trackingNumber: orderResponseData.order.trackingNumber,
-              paymentId: response.razorpay_payment_id,
-              orderStatus: 'Paid'
+            const finalOrderData = {
+              ...localOrderData,
+              orderStatus: 'Paid',
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature
             };
             
-            localStorage.setItem('lvsLastOrder', JSON.stringify(orderData));
-            
-            // Clear cart and navigate to order tracking
-            clearCart();
-            navigate(`/order-tracking/${orderResponseData.order._id}`);
+            const orderSaved = await saveOrder(finalOrderData);
+            if (orderSaved) {
+              // Clear cart from localStorage as well
+              localStorage.removeItem('lvsCartItems');
+              clearCart();
+              navigate(`/order-tracking/${orderId}`);
+            } else {
+              alert('Payment successful but error saving order. Please contact support with Payment ID: ' + response.razorpay_payment_id);
+            }
           } catch (error) {
-            console.error('Error processing Razorpay payment:', error);
-            alert('Payment successful but error processing order. Please contact support with Payment ID: ' + response.razorpay_payment_id);
+            console.error('Error processing payment:', error);
+            alert('Payment successful but error processing order. Please contact support.');
+          } finally {
+            setIsProcessing(false);
           }
         },
         prefill: {
-          name: `${customerInfo.firstName} ${customerInfo.lastName}`,
-          email: customerInfo.email,
-          contact: customerInfo.phone
+          name: `${testCustomerInfo.firstName} ${testCustomerInfo.lastName}`,
+          email: testCustomerInfo.email,
+          contact: testCustomerInfo.phone
         },
         notes: {
-          order_id: orderResponseData.order._id,
-          customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`
+          order_id: orderId,
+          customer_name: `${testCustomerInfo.firstName} ${testCustomerInfo.lastName}`
         },
         theme: {
-          color: '#3399cc'
+          color: '#FFD700'
         }
       };
-      
-      // Open Razorpay payment form
+
+      console.log('Creating Razorpay instance with options:', options);
       const razorpay = new window.Razorpay(options);
       
-      razorpay.on('payment.failed', function(response) {
+      razorpay.on('payment.failed', function (response) {
         console.error('Payment failed:', response.error);
+        setIsProcessing(false);
         alert(`Payment failed: ${response.error.description || 'Unknown error occurred'}\nPlease try again or use another payment method.`);
       });
       
+      console.log('Opening Razorpay checkout...');
       razorpay.open();
     } catch (error) {
       console.error('Error initializing Razorpay:', error);
-      alert('Error initializing payment gateway. Please try again.');
+      setIsProcessing(false);
+      alert('Error initializing payment. Please try again or use another payment method.');
     }
+  };
+
+  // Test function to trigger Razorpay directly
+  const testRazorpay = () => {
+    console.log('Testing Razorpay directly...');
+    setIsProcessing(true);
+    processRazorpay();
   };
 
   const getButtonText = () => {

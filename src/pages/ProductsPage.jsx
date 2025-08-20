@@ -46,8 +46,10 @@ const ProductsPage = () => {
   
   // Function to handle add to cart
   const handleAddToCart = async (product) => {
+    console.log('Add to cart clicked for product:', product);
     try {
       const result = await addToCart(product._id, 1, product.price);
+      console.log('Add to cart result:', result);
       if (result.success) {
         // Show success feedback
         const feedback = document.createElement('div');
@@ -82,8 +84,10 @@ const ProductsPage = () => {
 
   // Function to handle buy now
   const handleBuyNow = async (product) => {
+    console.log('Buy now clicked for product:', product);
     try {
       const result = await buyNow(product._id, 1, product.price);
+      console.log('Buy now result:', result);
       if (result.success) {
         navigate(`/order-tracking/${result.orderId}`);
       } else {
@@ -379,27 +383,35 @@ const ProductsPage = () => {
                     <div className="product-actions">
                       <button 
                         className="btn btn-primary"
-                        onClick={() => handleBuyNow({
-                          _id: product._id,
-                          name: product.name,
-                          price: product.price || 0,
-                          image: product.image,
-                          category: product.categoryName,
-                          brand: 'LVS'
-                        })}
+                        onClick={() => {
+                          console.log('Buy Now clicked!', product);
+                          alert('Buy Now clicked for: ' + product.name);
+                          handleBuyNow({
+                            _id: product._id,
+                            name: product.name,
+                            price: product.price || 0,
+                            image: product.image,
+                            category: product.categoryName,
+                            brand: 'LVS'
+                          });
+                        }}
                       >
                         Buy Now
                       </button>
                       <button 
                         className="btn btn-secondary"
-                        onClick={() => handleAddToCart({
-                          _id: product._id,
-                          name: product.name,
-                          price: product.price || 0,
-                          image: product.image,
-                          category: product.categoryName,
-                          brand: 'LVS'
-                        })}
+                        onClick={() => {
+                          console.log('Add to Cart clicked!', product);
+                          alert('Add to Cart clicked for: ' + product.name);
+                          handleAddToCart({
+                            _id: product._id,
+                            name: product.name,
+                            price: product.price || 0,
+                            image: product.image,
+                            category: product.categoryName,
+                            brand: 'LVS'
+                          });
+                        }}
                       >
                         Add to Cart
                       </button>

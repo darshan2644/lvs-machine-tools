@@ -62,7 +62,7 @@ router.get('/:userId', async (req, res) => {
     const { userId } = req.params;
 
     const cartItems = await Cart.find({ userId })
-      .populate('productId', 'name price images brand')
+      .populate('productId', 'name price image categoryName description')
       .sort({ addedAt: -1 });
 
     res.json({

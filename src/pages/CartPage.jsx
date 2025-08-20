@@ -1,33 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import CheckoutModal from './CheckoutModal';
 import './CartPage.css';
-import './CheckoutModal.css';
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCheckout, setShowCheckout] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const userId = localStorage.getItem('userId') || 'demo-user-123';
 
+  console.log('CartPage component loaded, userId:', userId);
+
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
+        console.log('Fetching cart items for userId:', userId);
         setLoading(true);
+        setError(''); // Clear previous errors
+        
         const response = await axios.get(`http://localhost:5000/api/cart/${userId}`);
+        console.log('Cart API response:', response.data);
         
         if (response.data.success) {
-          setCartItems(response.data.items);
+          setCartItems(response.data.items || []);
+          console.log('Cart items loaded:', response.data.items);
         } else {
+          console.error('API returned success=false:', response.data);
           setError('Failed to load cart items');
         }
       } catch (error) {
         console.error('Error fetching cart:', error);
-        setError('Failed to load cart items');
+        setError(`Failed to load cart items: ${error.message}`);
       } finally {
         setLoading(false);
       }
@@ -96,17 +101,22 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
+    console.log('Checkout button clicked!');
+    console.log('Cart items:', cartItems);
+    
     if (cartItems.length === 0) {
+      console.log('Cart is empty, showing error');
       setError('Your cart is empty');
       return;
     }
-    setShowCheckout(true);
-  };
-
-  const handleOrderPlaced = (orderId) => {
-    setShowCheckout(false);
-    setCartItems([]);
-    navigate(`/order-tracking/${orderId}`);
+    
+    console.log('Saving cart items to localStorage and navigating...');
+    // Save cart items to localStorage for checkout page
+    localStorage.setItem('lvsCartItems', JSON.stringify(cartItems));
+    
+    // Navigate to checkout page
+    console.log('Navigating to /checkout');
+    navigate('/checkout');
   };
 
   if (loading) {
@@ -227,19 +237,6 @@ const CartPage = () => {
               </button>
             </div>
           </div>
-        )}
-
-        {showCheckout && (
-          <CheckoutModal
-            cartItems={cartItems}
-            subtotal={getSubtotal()}
-            tax={getTax()}
-            delivery={getDeliveryCharge()}
-            total={getTotal()}
-            onClose={() => setShowCheckout(false)}
-            onOrderPlaced={handleOrderPlaced}
-            userId={userId}
-          />
         )}
       </div>
     </div>

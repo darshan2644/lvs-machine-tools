@@ -15,10 +15,14 @@ const CheckoutModal = ({
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
 
+  console.log('CheckoutModal props:', { cartItems, subtotal, tax, delivery, total, userId });
+
   const handleConfirmOrder = async () => {
     try {
       setProcessing(true);
       setError('');
+
+      console.log('Starting order confirmation...');
 
       const orderData = {
         userId,

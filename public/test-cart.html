@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Cart Setup</title>
+</head>
+<body>
+    <h1>Setting up test cart...</h1>
+    <p>Check console for cart setup status.</p>
+    
+    <script>
+        // Create test cart items
+        const testCartItems = [
+            {
+                _id: "6774f40d8a61c3bcdb78b2dc",
+                name: "CNC Bangle Cutting Machine",
+                price: 125000,
+                quantity: 1,
+                image: "/images/cnc-bangle-main.png",
+                description: "High precision CNC bangle cutting machine"
+            },
+            {
+                _id: "6774f40d8a61c3bcdb78b2dd",
+                name: "9-Axis CNC Machine", 
+                price: 275000,
+                quantity: 1,
+                image: "/images/cnc-9axis-main.png",
+                description: "Advanced 9-axis CNC machine for complex operations"
+            }
+        ];
+        
+        // Save to localStorage
+        localStorage.setItem('lvsCartItems', JSON.stringify(testCartItems));
+        console.log('Test cart items saved to localStorage:', testCartItems);
+        
+        // Redirect to checkout page after 2 seconds
+        setTimeout(() => {
+            window.location.href = '/checkout';
+        }, 2000);
+    </script>
+</body>
+</html>

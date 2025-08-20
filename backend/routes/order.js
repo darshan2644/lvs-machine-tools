@@ -12,15 +12,7 @@ const razorpay = new Razorpay({
 // Buy Now - Direct checkout for single product
 router.post('/buynow', async (req, res) => {
   try {
-    const { 
-      userId, 
-      productId, 
-      quantity = 1, 
-      price, 
-      shippingAddress,
-      shippingCost = 0,
-      paymentMethod = 'cod'
-    } = req.body;
+    const { userId, productId, quantity = 1, price } = req.body;
 
     if (!userId || !productId || !price) {
       return res.status(400).json({
@@ -29,33 +21,9 @@ router.post('/buynow', async (req, res) => {
       });
     }
 
-    if (!shippingAddress) {
-      return res.status(400).json({
-        success: false,
-        message: 'Shipping address is required'
-      });
-    }
-
-    // Validate shipping address
-    const requiredAddressFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'pincode'];
-    const missingFields = requiredAddressFields.filter(field => !shippingAddress[field]);
-    
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Missing required address fields: ${missingFields.join(', ')}`,
-        missingFields
-      });
-    }
-
     const totalPrice = parseFloat(price) * parseInt(quantity);
     const tax = totalPrice * 0.18; // 18% GST
-    const finalPrice = totalPrice + tax + parseFloat(shippingCost);
-    const trackingNumber = `LVS-BN-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    
-    // Set estimated delivery date (10 days from now)
-    const estimatedDeliveryDate = new Date();
-    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 10);
+    const finalPrice = totalPrice + tax;
 
     // Create order directly without adding to cart
     const order = await Order.create({
@@ -65,15 +33,11 @@ router.post('/buynow', async (req, res) => {
         quantity: parseInt(quantity),
         price: parseFloat(price)
       }],
-      shippingAddress,
       totalPrice: finalPrice,
       tax: tax,
-      shippingCost: parseFloat(shippingCost),
-      paymentMethod,
+      paymentMethod: 'cod', // Default to COD for buy now
       paymentStatus: 'pending',
-      orderStatus: 'placed',
-      trackingNumber,
-      estimatedDeliveryDate
+      orderStatus: 'placed'
     });
 
     res.json({
@@ -95,43 +59,17 @@ router.post('/buynow', async (req, res) => {
 // Place order
 router.post('/place', async (req, res) => {
   try {
-    const { 
-      userId, 
-      items, 
-      totalPrice, 
-      tax, 
-      paymentMethod, 
-      shippingAddress,
-      shippingCost = 0
-    } = req.body;
+    const { userId, items, totalPrice, tax, paymentMethod } = req.body;
 
-    if (!userId || !items || !totalPrice || !paymentMethod || !shippingAddress) {
+    if (!userId || !items || !totalPrice || !paymentMethod) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields',
-        received: { userId, items, totalPrice, paymentMethod, shippingAddress: !!shippingAddress }
-      });
-    }
-
-    // Validate shipping address
-    const requiredAddressFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'pincode'];
-    const missingFields = requiredAddressFields.filter(field => !shippingAddress[field]);
-    
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Missing required address fields: ${missingFields.join(', ')}`,
-        missingFields
+        message: 'Missing required fields'
       });
     }
 
     let paymentStatus = 'pending';
     let razorpayOrderId = null;
-    let trackingNumber = `LVS-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    
-    // Set estimated delivery date (10 days from now)
-    const estimatedDeliveryDate = new Date();
-    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 10);
 
     // Handle Razorpay payment
     if (paymentMethod === 'razorpay') {
@@ -167,15 +105,11 @@ router.post('/place', async (req, res) => {
         quantity: item.quantity,
         price: item.price
       })),
-      shippingAddress,
       totalPrice: parseFloat(totalPrice),
       tax: parseFloat(tax) || 0,
-      shippingCost: parseFloat(shippingCost),
       paymentMethod,
       paymentStatus,
-      razorpayOrderId,
-      trackingNumber,
-      estimatedDeliveryDate
+      razorpayOrderId
     });
 
     // Clear cart after successful order
@@ -224,50 +158,6 @@ router.get('/track/:orderId', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error tracking order',
-      error: error.message
-    });
-  }
-});
-
-// Update payment status after Razorpay payment
-router.post('/update-payment/:orderId', async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { razorpayPaymentId, razorpaySignature, paymentStatus } = req.body;
-
-    if (!razorpayPaymentId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Payment ID is required'
-      });
-    }
-
-    const order = await Order.findById(orderId);
-    
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
-    }
-
-    // Update payment details
-    order.razorpayPaymentId = razorpayPaymentId;
-    order.razorpaySignature = razorpaySignature;
-    order.paymentStatus = paymentStatus || 'success';
-    
-    await order.save();
-
-    res.json({
-      success: true,
-      message: 'Payment status updated successfully',
-      order
-    });
-  } catch (error) {
-    console.error('Update payment error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating payment status',
       error: error.message
     });
   }

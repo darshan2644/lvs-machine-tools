@@ -15,9 +15,11 @@ const authRoutes = require('./routes/auth');
 const orderRoutes = require('./routes/order');
 const cartRoutes = require('./routes/cart');
 const emailRoutes = require('./routes/email');
+const paymentRoutes = require('./routes/payment');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+console.log('Starting server with payment routes...');
 
 // Middleware
 app.use(cors());
@@ -28,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // MongoDB connection
 const connectDB = async () => {
