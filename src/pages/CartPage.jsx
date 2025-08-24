@@ -133,11 +133,14 @@ const CartPage = () => {
   }
 
   return (
-    <div className="cart-page">
+    <div className="elegant-cart-page">
       <div className="container">
-        <div className="cart-header">
-          <h1>Shopping Cart</h1>
-          <p>{cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}</p>
+        <div className="cart-header animate-fade-in">
+          <div className="header-content">
+            <span className="cart-subtitle">SHOPPING</span>
+            <h1 className="cart-title">Your <span className="text-brown">Cart</span></h1>
+            <p className="cart-count">{cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} in your cart</p>
+          </div>
         </div>
 
         {error && (

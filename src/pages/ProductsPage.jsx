@@ -4,7 +4,7 @@ import axios from 'axios';
 import { addToCart, buyNow } from '../services/cartService';
 import './ProductsPage.css';
 
-// Sample products moved outside component to avoid dependency issues
+// Sample products for fallback
 const sampleProducts = [
   {
     _id: 'cnc-9axis',
@@ -37,7 +37,7 @@ const sampleProducts = [
 
 const ProductsPage = () => {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(sampleProducts);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -51,28 +51,7 @@ const ProductsPage = () => {
       const result = await addToCart(product._id, 1, product.price);
       console.log('Add to cart result:', result);
       if (result.success) {
-        // Show success feedback
-        const feedback = document.createElement('div');
-        feedback.className = 'fixed top-4 right-4 bg-yellow-400 text-black px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300';
-        feedback.innerHTML = `
-          <div class="flex items-center space-x-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            <span class="font-semibold">Added to cart!</span>
-          </div>
-        `;
-        
-        document.body.appendChild(feedback);
-        
-        setTimeout(() => {
-          feedback.style.transform = 'translateX(400px)';
-          setTimeout(() => {
-            if (document.body.contains(feedback)) {
-              document.body.removeChild(feedback);
-            }
-          }, 300);
-        }, 2000);
+        alert('Product added to cart successfully!');
       } else {
         alert(result.message || 'Failed to add to cart');
       }
@@ -102,44 +81,21 @@ const ProductsPage = () => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
+      const [categoriesRes, productsRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/categories'),
+        axios.get('http://localhost:5000/api/products')
+      ]);
       
-      // Always include our sample products
-      let allProducts = [...sampleProducts];
-      let allCategories = [
-        { _id: 'cnc-machines', name: 'CNC Machines', slug: 'cnc-machines' },
-        { _id: 'bangle-cnc-cutting', name: 'Bangle CNC Cutting', slug: 'bangle-cnc-cutting' }
-      ];
-      
-      // Try to fetch from backend but don't fail if it's not available
-      try {
-        const [productsRes, categoriesRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/products'),
-          axios.get('http://localhost:5000/api/categories')
-        ]);
-        
-        // Add backend products to our sample products
-        if (productsRes.data.data) {
-          allProducts = [...allProducts, ...productsRes.data.data];
-        }
-        
-        // Add backend categories to our sample categories
-        if (categoriesRes.data.data) {
-          allCategories = [...allCategories, ...categoriesRes.data.data];
-        }
-      } catch {
-        console.log('Backend not available, using sample products only');
-      }
-      
-      setProducts(allProducts);
-      setCategories(allCategories);
+      setCategories(categoriesRes.data.data || []);
+      setProducts(productsRes.data.data || sampleProducts);
     } catch (error) {
-      console.error('Error setting up products:', error);
-      // Fallback to sample products only
-      setProducts(sampleProducts);
+      console.error('Error fetching data:', error);
+      // Use sample data on error
       setCategories([
         { _id: 'cnc-machines', name: 'CNC Machines', slug: 'cnc-machines' },
         { _id: 'bangle-cnc-cutting', name: 'Bangle CNC Cutting', slug: 'bangle-cnc-cutting' }
       ]);
+      setProducts(sampleProducts);
     } finally {
       setLoading(false);
     }
@@ -147,6 +103,7 @@ const ProductsPage = () => {
 
   useEffect(() => {
     fetchData();
+    
     // Set initial category from URL parameters
     const categoryParam = searchParams.get('category');
     if (categoryParam) {
@@ -157,55 +114,60 @@ const ProductsPage = () => {
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading products...</p>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+        <div className="text-center">
+          <div className="loading-spinner mb-3"></div>
+          <p>Loading products...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="products-page">
+    <div className="elegant-products-page">
       {/* Hero Section */}
-      <section className="products-hero">
+      <section className="hero-section">
         <div className="container">
-          <h1 className="hero-title">
-            Our <span className="text-yellow">Product Range</span>
-          </h1>
-          <p className="hero-description">
-            Explore our comprehensive collection of professional machine tools and industrial equipment
-          </p>
+          <div className="hero-content animate-fade-in">
+            <p className="hero-subtitle">PROFESSIONAL TOOLS</p>
+            <h1 className="hero-title">
+              Machine & <span className="text-brown">Tool</span> Collection
+            </h1>
+            <p className="hero-description">
+              Discover our premium range of industrial equipment and precision machinery for professional manufacturing.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* Filters Section */}
       <section className="filters-section">
         <div className="container">
-          <div className="filters-wrapper">
-            <div className="search-filter">
+          <div className="filters-wrapper animate-slide-in-left">
+            <div className="search-wrapper">
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
+                className="elegant-search"
               />
             </div>
-            <div className="category-filter">
+            <div className="category-wrapper">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="category-select"
+                className="elegant-select"
               >
                 <option value="all">All Categories</option>
                 {categories.map((category) => (
-                  <option key={category._id} value={category.slug}>
+                  <option key={category._id} value={category._id}>
                     {category.name}
                   </option>
                 ))}
@@ -215,206 +177,85 @@ const ProductsPage = () => {
         </div>
       </section>
 
-
-
       {/* Products Grid */}
       <section className="products-section">
         <div className="container">
           {filteredProducts.length === 0 ? (
-            <div className="no-products">
-              <p>No products found matching your criteria.</p>
+            <div className="no-products animate-fade-in">
+              <h3>No products found</h3>
+              <p>Try adjusting your search or category filters.</p>
             </div>
           ) : (
             <div className="products-grid">
-              {/* Featured 9 Axis CNC Machine */}
-              <div className="product-card">
-                <div className="product-image" onClick={() => navigate('/cnc-9axis-machine')}>
-                  <img 
-                    src="/images/cnc-9axis-main.png" 
-                    alt="9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine"
-                    onError={(e) => {
-                      e.target.src = '/images/placeholder-product.svg';
-                    }}
-                  />
-                  <div className="product-badge">FEATURED</div>
-                </div>
-                <div className="product-info">
-                  <h3 className="product-title">9 Axis CNC Universal Cutting Machine</h3>
-                  <div className="product-price">₹2,50,000</div>
-                  <div className="product-actions">
-                    <button 
-                      className="btn btn-primary"
-                      onClick={() => handleBuyNow({
-                        _id: '68a4a5d12c779915538996a7',
-                        name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
-                        price: 250000,
-                        image: '/images/cnc-9axis-main.png',
-                        category: 'CNC Machines',
-                        brand: 'LVS'
-                      })}
-                    >
-                      Buy Now
-                    </button>
-                    <button 
-                      className="btn btn-secondary"
-                      onClick={() => handleAddToCart({
-                        _id: '68a4a5d12c779915538996a7',
-                        name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
-                        price: 250000,
-                        image: '/images/cnc-9axis-main.png',
-                        category: 'CNC Machines',
-                        brand: 'LVS'
-                      })}
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bangle CNC Cutting Machine */}
-              <div className="product-card">
-                <div className="product-image" onClick={() => navigate('/bangle-cnc-cutting-machine')}>
-                  <img 
-                    src="/images/bangle-cnc-main.png" 
-                    alt="Bangle CNC Cutting Machine"
-                    onError={(e) => {
-                      e.target.src = '/images/placeholder-product.svg';
-                    }}
-                  />
-                  <div className="product-badge">NEW</div>
-                </div>
-                <div className="product-info">
-                  <h3 className="product-title">Bangle CNC Cutting Machine</h3>
-                  <div className="product-price">₹1,05,000</div>
-                  <div className="product-actions">
-                    <button 
-                      className="btn btn-primary"
-                      onClick={() => handleBuyNow({
-                        _id: '68a4a5d12c779915538996a8',
-                        name: 'Bangle CNC Cutting Machine',
-                        price: 105000,
-                        image: '/images/bangle-cnc-main.png',
-                        category: 'Bangle CNC Cutting',
-                        brand: 'LVS'
-                      })}
-                    >
-                      Buy Now
-                    </button>
-                    <button 
-                      className="btn btn-secondary"
-                      onClick={() => handleAddToCart({
-                        _id: '68a4a5d12c779915538996a8',
-                        name: 'Bangle CNC Cutting Machine',
-                        price: 105000,
-                        image: '/images/bangle-cnc-main.png',
-                        category: 'Bangle CNC Cutting',
-                        brand: 'LVS'
-                      })}
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* CNC Bangle Cutting Machine */}
-              <div className="product-card">
-                <div className="product-image" onClick={() => navigate('/cnc-bangle-cutting-machine')}>
-                  <img 
-                    src="/images/cnc-bangle-main.png" 
-                    alt="CNC Bangle Cutting Machine"
-                    onError={(e) => {
-                      e.target.src = '/images/placeholder-product.svg';
-                    }}
-                  />
-                </div>
-                <div className="product-info">
-                  <h3 className="product-title">CNC Bangle Cutting Machine</h3>
-                  <div className="product-price">₹95,000</div>
-                  <div className="product-actions">
-                    <button 
-                      className="btn btn-primary"
-                      onClick={() => handleBuyNow({
-                        _id: '68a4a5d12c779915538996a9',
-                        name: 'CNC Bangle Cutting Machine',
-                        price: 95000,
-                        image: '/images/cnc-bangle-main.png',
-                        category: 'Bangle CNC Cutting',
-                        brand: 'LVS'
-                      })}
-                    >
-                      Buy Now
-                    </button>
-                    <button 
-                      className="btn btn-secondary"
-                      onClick={() => handleAddToCart({
-                        _id: '68a4a5d12c779915538996a9',
-                        name: 'CNC Bangle Cutting Machine',
-                        price: 95000,
-                        image: '/images/cnc-bangle-main.png',
-                        category: 'Bangle CNC Cutting',
-                        brand: 'LVS'
-                      })}
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              
-              {filteredProducts.map((product) => (
-                <div key={product._id} className="product-card">
-                  <div className="product-image" onClick={() => navigate(`/product/${product._id}`)}>
+              {filteredProducts.map((product, index) => (
+                <div 
+                  key={product._id} 
+                  className="elegant-product-card animate-scale-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                  onClick={(e) => {
+                    // Only navigate if clicking outside buttons
+                    if (!e.target.closest('.product-actions')) {
+                      navigate(`/product/${product._id}`);
+                    }
+                  }}
+                >
+                  <div className="product-image-container">
                     <img 
                       src={product.image || '/images/placeholder-product.svg'} 
                       alt={product.name}
+                      className="product-image"
                       onError={(e) => {
                         e.target.src = '/images/placeholder-product.svg';
                       }}
                     />
+                    {product.categoryName && (
+                      <span className="category-badge">
+                        {product.categoryName}
+                      </span>
+                    )}
                   </div>
-                  <div className="product-info">
-                    <h3 className="product-title">{product.name}</h3>
-                    <div className="product-price">
-                      {product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'Ask Price'}
+                  
+                  <div className="product-content">
+                    <div className="product-header">
+                      <span className="product-category">MACHINE</span>
+                      <h3 className="product-title">{product.name}</h3>
+                      <p className="product-description">
+                        {product.description || 'A professional machine tool designed for precision manufacturing with advanced industrial capabilities.'}
+                      </p>
                     </div>
-                    <div className="product-actions">
-                      <button 
-                        className="btn btn-primary"
-                        onClick={() => {
-                          console.log('Buy Now clicked!', product);
-                          alert('Buy Now clicked for: ' + product.name);
-                          handleBuyNow({
-                            _id: product._id,
-                            name: product.name,
-                            price: product.price || 0,
-                            image: product.image,
-                            category: product.categoryName,
-                            brand: 'LVS'
-                          });
-                        }}
-                      >
-                        Buy Now
-                      </button>
-                      <button 
-                        className="btn btn-secondary"
-                        onClick={() => {
-                          console.log('Add to Cart clicked!', product);
-                          alert('Add to Cart clicked for: ' + product.name);
-                          handleAddToCart({
-                            _id: product._id,
-                            name: product.name,
-                            price: product.price || 0,
-                            image: product.image,
-                            category: product.categoryName,
-                            brand: 'LVS'
-                          });
-                        }}
-                      >
-                        Add to Cart
-                      </button>
+                    
+                    <div className="product-footer">
+                      <div className="price-section">
+                        <span className="price">
+                          {product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'Contact for Price'}
+                        </span>
+                        <span className="price-old">
+                          {product.price ? `₹${(product.price * 1.2).toLocaleString('en-IN')}` : ''}
+                        </span>
+                      </div>
+                      
+                      <div className="product-actions">
+                        <button 
+                          className="btn-add-cart"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Add to Cart clicked!', product);
+                            handleAddToCart({
+                              _id: product._id,
+                              name: product.name,
+                              price: product.price || 0,
+                              image: product.image,
+                              category: product.categoryName,
+                              brand: 'LVS'
+                            });
+                          }}
+                        >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.7 15.3C4.3 15.7 4.6 16.4 5.1 16.4H17M17 13V16.4H17M9 19.5A1.5 1.5 0 1 1 10.5 21A1.5 1.5 0 0 1 9 19.5ZM20 19.5A1.5 1.5 0 1 1 21.5 21A1.5 1.5 0 0 1 20 19.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          Add to Cart
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

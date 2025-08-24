@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Checkout - LVS Machine & Tools</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+        }
+        button {
+            background-color: #DAA520;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #B8860B;
+        }
+        .success {
+            color: green;
+            margin-top: 20px;
+        }
+        .product {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Checkout Testing Page</h1>
+        <p>Use this page to quickly test the checkout functionality</p>
+
+        <div class="product">
+            <h3>9 Axis CNC Machine - ₹2,50,000</h3>
+            <button onclick="addSingleItem()">Add to Cart & Test Checkout</button>
+        </div>
+
+        <div class="product">
+            <h3>Multiple Items</h3>
+            <button onclick="addMultipleItems()">Add Multiple Items & Test Checkout</button>
+        </div>
+
+        <button onclick="clearCart()">Clear Cart</button>
+        <button onclick="goToCheckout()">Go to Checkout</button>
+
+        <div id="message"></div>
+
+        <h2>Instructions:</h2>
+        <ol>
+            <li>Click "Add to Cart & Test Checkout" to add test items</li>
+            <li>Click "Go to Checkout" to navigate to the checkout page</li>
+            <li>Fill in the form with test data:
+                <ul>
+                    <li>First Name: Test</li>
+                    <li>Last Name: User</li>
+                    <li>Email: test@example.com</li>
+                    <li>Phone: 1234567890</li>
+                    <li>Address: 123 Test Street</li>
+                    <li>City: Test City</li>
+                    <li>State: Test State</li>
+                    <li>Pincode: 123456</li>
+                </ul>
+            </li>
+            <li>Select a payment method and test:
+                <ul>
+                    <li><strong>COD:</strong> Should work immediately</li>
+                    <li><strong>Card:</strong> Should simulate processing and work</li>
+                    <li><strong>Razorpay:</strong> Should open Razorpay modal (use test card: 4111 1111 1111 1111)</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <script>
+        function addSingleItem() {
+            const mockCartItems = [
+                {
+                    _id: '68a4a5d12c779915538996a7',
+                    name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
+                    price: 250000,
+                    image: '/images/cnc-9axis-main.png',
+                    quantity: 1
+                }
+            ];
+
+            localStorage.setItem('lvsCartItems', JSON.stringify(mockCartItems));
+            window.dispatchEvent(new CustomEvent('cartUpdated'));
+            showMessage('Single item added to cart! Click "Go to Checkout" to test.');
+        }
+
+        function addMultipleItems() {
+            const mockCartItems = [
+                {
+                    _id: '68a4a5d12c779915538996a7',
+                    name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
+                    price: 250000,
+                    image: '/images/cnc-9axis-main.png',
+                    quantity: 1
+                },
+                {
+                    _id: '68a4a5d12c779915538996a8',
+                    name: 'Bangle CNC Cutting Machine',
+                    price: 105000,
+                    image: '/images/bangle-cnc-main.png',
+                    quantity: 2
+                }
+            ];
+
+            localStorage.setItem('lvsCartItems', JSON.stringify(mockCartItems));
+            window.dispatchEvent(new CustomEvent('cartUpdated'));
+            showMessage('Multiple items added to cart! Click "Go to Checkout" to test.');
+        }
+
+        function clearCart() {
+            localStorage.removeItem('lvsCartItems');
+            window.dispatchEvent(new CustomEvent('cartUpdated'));
+            showMessage('Cart cleared!');
+        }
+
+        function goToCheckout() {
+            window.location.href = '/checkout';
+        }
+
+        function showMessage(message) {
+            document.getElementById('message').innerHTML = `<div class="success">${message}</div>`;
+            setTimeout(() => {
+                document.getElementById('message').innerHTML = '';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

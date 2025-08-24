@@ -359,35 +359,59 @@ const CheckoutPage = () => {
 
   const processCOD = async () => {
     console.log('Processing COD order...');
-    const orderId = generateOrderId();
-    console.log('Generated order ID:', orderId);
     
-    const orderData = {
-      orderId,
-      customerName: `${customerInfo.firstName || 'John'} ${customerInfo.lastName || 'Doe'}`,
-      customerEmail: customerInfo.email || 'customer@example.com',
-      customerPhone: customerInfo.phone || '1234567890',
-      items: cartItems,
-      totalAmount: calculations.grandTotal,
-      deliveryAddress: customerInfo,
-      deliveryDate,
-      paymentMethod: 'Cash on Delivery',
-      orderStatus: 'Confirmed',
-      orderDate: new Date().toISOString(),
-      trackingNumber: `LVS-COD-${Date.now()}`,
-      estimatedDelivery: deliveryDate || 'Within 7-10 business days'
-    };
+    try {
+      // Prepare order data for backend API
+      const orderData = {
+        userId: 'demo-user-123', // In real app, get from auth context
+        items: cartItems.map(item => ({
+          productId: item._id || item.productId,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        totalPrice: calculations.grandTotal,
+        tax: calculations.cgst + calculations.sgst,
+        paymentMethod: 'cod',
+        shippingAddress: {
+          fullName: `${customerInfo.firstName} ${customerInfo.lastName}`,
+          address: customerInfo.address,
+          city: customerInfo.city,
+          state: customerInfo.state,
+          pincode: customerInfo.pincode,
+          phone: customerInfo.phone
+        }
+      };
 
-    console.log('Order data:', orderData);
+      console.log('Sending order data to backend:', orderData);
 
-    const orderSaved = await saveOrder(orderData);
-    console.log('Order saved:', orderSaved);
-    
-    if (orderSaved) {
-      clearCart();
-      navigate('/'); // Redirect to home after placing order
-    } else {
-      throw new Error('Failed to save order');
+      // Call backend API to create order
+      const response = await fetch('http://localhost:5000/api/orders/place', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      const result = await response.json();
+      console.log('Backend response:', result);
+
+      if (result.success) {
+        // Clear cart
+        clearCart();
+        localStorage.removeItem('lvsCartItems');
+        
+        // Navigate to order confirmation page with order data
+        navigate(`/order-confirmation/${result.order.orderId || result.orderId}`, {
+          state: { order: result.order }
+        });
+      } else {
+        throw new Error(result.message || 'Failed to place order');
+      }
+    } catch (error) {
+      console.error('Error placing COD order:', error);
+      alert('Failed to place order. Please try again.');
+      throw error;
     }
   };
 
@@ -584,22 +608,33 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className="checkout-page">
+    <div className="elegant-checkout-page">
       <div className="container">
-        <div className="checkout-header">
-          <h1>Checkout</h1>
-          <div className="checkout-steps">
-            <div className="step active">
-              <span className="step-number">1</span>
-              <span className="step-title">Details</span>
+        <div className="checkout-header animate-fade-in">
+          <div className="header-content">
+            <span className="checkout-subtitle">SECURE</span>
+            <h1 className="checkout-title">
+              Check<span className="text-brown">out</span>
+            </h1>
+            <p className="checkout-description">
+              Complete your order with our secure checkout process
+            </p>
+          </div>
+          
+          <div className="progress-steps">
+            <div className="step-item active">
+              <div className="step-circle">1</div>
+              <span className="step-label">Details</span>
             </div>
-            <div className="step">
-              <span className="step-number">2</span>
-              <span className="step-title">Payment</span>
+            <div className="step-connector"></div>
+            <div className="step-item">
+              <div className="step-circle">2</div>
+              <span className="step-label">Payment</span>
             </div>
-            <div className="step">
-              <span className="step-number">3</span>
-              <span className="step-title">Confirmation</span>
+            <div className="step-connector"></div>
+            <div className="step-item">
+              <div className="step-circle">3</div>
+              <span className="step-label">Complete</span>
             </div>
           </div>
         </div>
@@ -607,132 +642,153 @@ const CheckoutPage = () => {
         <div className="checkout-content">
           <div className="checkout-main">
             {/* Customer Information */}
-            <div className="section">
-              <h2>Customer Information</h2>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>First Name *</label>
+            <div className="elegant-section animate-slide-in-left">
+              <div className="section-header">
+                <div className="section-icon">👤</div>
+                <h2>Customer Information</h2>
+                <p>Please provide your contact details</p>
+              </div>
+              <div className="elegant-form-grid">
+                <div className="elegant-form-group">
+                  <label className="form-label">First Name *</label>
                   <input
                     type="text"
                     name="firstName"
                     value={customerInfo.firstName}
                     onChange={(e) => handleInputChange(e, 'customer')}
                     placeholder="Enter first name"
+                    className="elegant-input"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>Last Name *</label>
+                <div className="elegant-form-group">
+                  <label className="form-label">Last Name *</label>
                   <input
                     type="text"
                     name="lastName"
                     value={customerInfo.lastName}
                     onChange={(e) => handleInputChange(e, 'customer')}
                     placeholder="Enter last name"
+                    className="elegant-input"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>Email *</label>
+                <div className="elegant-form-group">
+                  <label className="form-label">Email *</label>
                   <input
                     type="email"
                     name="email"
                     value={customerInfo.email}
                     onChange={(e) => handleInputChange(e, 'customer')}
                     placeholder="Enter email address"
+                    className="elegant-input"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>Phone *</label>
+                <div className="elegant-form-group">
+                  <label className="form-label">Phone *</label>
                   <input
                     type="tel"
                     name="phone"
                     value={customerInfo.phone}
                     onChange={(e) => handleInputChange(e, 'customer')}
                     placeholder="Enter phone number"
+                    className="elegant-input"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>Company</label>
+                <div className="elegant-form-group">
+                  <label className="form-label">Company</label>
                   <input
                     type="text"
                     name="company"
                     value={customerInfo.company}
                     onChange={(e) => handleInputChange(e, 'customer')}
                     placeholder="Enter company name (optional)"
+                    className="elegant-input"
                   />
                 </div>
               </div>
             </div>
 
             {/* Delivery Address */}
-            <div className="section">
-              <h2>Delivery Address</h2>
-              <div className="form-grid">
-                <div className="form-group full-width">
-                  <label>Street Address *</label>
+            <div className="elegant-section animate-slide-in-left">
+              <div className="section-header">
+                <div className="section-icon">🏠</div>
+                <h2>Delivery Address</h2>
+                <p>Where should we deliver your order?</p>
+              </div>
+              <div className="elegant-form-grid">
+                <div className="elegant-form-group full-width">
+                  <label className="form-label">Street Address *</label>
                   <input
                     type="text"
                     name="address"
                     value={customerInfo.address}
                     onChange={(e) => handleInputChange(e, 'customer')}
                     placeholder="Enter complete street address"
+                    className="elegant-input"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>City *</label>
+                <div className="elegant-form-group">
+                  <label className="form-label">City *</label>
                   <input
                     type="text"
                     name="city"
                     value={customerInfo.city}
                     onChange={(e) => handleInputChange(e, 'customer')}
                     placeholder="Enter city"
+                    className="elegant-input"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>State *</label>
+                <div className="elegant-form-group">
+                  <label className="form-label">State *</label>
                   <input
                     type="text"
                     name="state"
                     value={customerInfo.state}
                     onChange={(e) => handleInputChange(e, 'customer')}
                     placeholder="Enter state"
+                    className="elegant-input"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>Pincode *</label>
+                <div className="elegant-form-group">
+                  <label className="form-label">Pincode *</label>
                   <input
                     type="text"
                     name="pincode"
                     value={customerInfo.pincode}
                     onChange={(e) => handleInputChange(e, 'customer')}
                     placeholder="Enter pincode"
+                    className="elegant-input"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>Country *</label>
+                <div className="elegant-form-group">
+                  <label className="form-label">Country *</label>
                   <input
                     type="text"
                     name="country"
                     value={customerInfo.country}
                     onChange={(e) => handleInputChange(e, 'customer')}
+                    className="elegant-input readonly"
                     readOnly
-                    style={{ backgroundColor: '#f5f5f5' }}
                   />
                 </div>
               </div>
             </div>
 
             {/* Payment Methods */}
-            <div className="section">
-              <h2>Payment Method</h2>
-              <div className="payment-methods">
+            <div className="elegant-section animate-slide-in-left">
+              <div className="section-header">
+                <div className="section-icon">💳</div>
+                <h2>Payment Method</h2>
+                <p>Choose your preferred payment option</p>
+              </div>
+              <div className="elegant-payment-methods">
                 {/* Cash on Delivery */}
                 <div
                   className={`payment-method ${selectedPaymentMethod === 'cod' ? 'selected' : ''}`}
@@ -793,53 +849,61 @@ const CheckoutPage = () => {
 
               {/* Card Form */}
               {showCardForm && (
-                <div className="card-form">
-                  <h3>Card Details</h3>
-                  <div className="form-grid">
-                    <div className="form-group full-width">
-                      <label>Card Number *</label>
+                <div className="elegant-card-form animate-slide-in-down">
+                  <div className="card-form-header">
+                    <div className="section-icon">💳</div>
+                    <h3>Card Details</h3>
+                    <p>Enter your card information</p>
+                  </div>
+                  <div className="elegant-form-grid">
+                    <div className="elegant-form-group full-width">
+                      <label className="form-label">Card Number *</label>
                       <input
                         type="text"
                         name="cardNumber"
                         value={cardInfo.cardNumber}
                         onChange={(e) => handleInputChange(e, 'card')}
                         placeholder="1234 5678 9012 3456"
+                        className="elegant-input card-input"
                         maxLength={19}
                         required
                       />
                     </div>
-                    <div className="form-group">
-                      <label>Expiry Date *</label>
+                    <div className="elegant-form-group">
+                      <label className="form-label">Expiry Date *</label>
                       <input
                         type="text"
                         name="expiryDate"
                         value={cardInfo.expiryDate}
                         onChange={(e) => handleInputChange(e, 'card')}
                         placeholder="MM/YY"
+                        className="elegant-input card-input"
                         maxLength={5}
                         required
                       />
                     </div>
-                    <div className="form-group">
-                      <label>CVV *</label>
+                    <div className="elegant-form-group">
+                      <label className="form-label">CVV *</label>
                       <input
                         type="password"
                         name="cvv"
                         value={cardInfo.cvv}
                         onChange={(e) => handleInputChange(e, 'card')}
                         placeholder="123"
+                        className="elegant-input card-input"
                         maxLength={4}
                         required
                       />
                     </div>
-                    <div className="form-group full-width">
-                      <label>Cardholder Name *</label>
+                    <div className="elegant-form-group full-width">
+                      <label className="form-label">Cardholder Name *</label>
                       <input
                         type="text"
                         name="cardholderName"
                         value={cardInfo.cardholderName}
                         onChange={(e) => handleInputChange(e, 'card')}
                         placeholder="Enter cardholder name"
+                        className="elegant-input card-input"
                         required
                       />
                     </div>
@@ -850,14 +914,18 @@ const CheckoutPage = () => {
           </div>
 
           {/* Order Summary */}
-          <div className="checkout-sidebar">
-            <div className="order-summary">
-              <h2>Order Summary</h2>
+          <div className="checkout-sidebar animate-slide-in-right">
+            <div className="elegant-order-summary">
+              <div className="summary-header">
+                <div className="summary-icon">🛒</div>
+                <h2>Order Summary</h2>
+                <p>Review your order details</p>
+              </div>
               
               {/* Order Items */}
-              <div className="order-items">
+              <div className="elegant-order-items">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="order-item">
+                  <div key={item.id} className="elegant-order-item">
                     <div className="item-image">
                       <img 
                         src={item.image || '/images/placeholder-product.svg'} 
@@ -882,59 +950,69 @@ const CheckoutPage = () => {
               </div>
 
               {/* Price Breakdown */}
-              <div className="price-breakdown">
-                <div className="price-row">
+              <div className="elegant-price-breakdown">
+                <div className="elegant-price-row">
                   <span>Subtotal</span>
                   <span>{formatCurrency(calculations.subtotal)}</span>
                 </div>
-                <div className="price-row">
+                <div className="elegant-price-row">
                   <span>CGST (9%)</span>
                   <span>{formatCurrency(calculations.cgst)}</span>
                 </div>
-                <div className="price-row">
+                <div className="elegant-price-row">
                   <span>SGST (9%)</span>
                   <span>{formatCurrency(calculations.sgst)}</span>
                 </div>
-                <div className="price-row">
+                <div className="elegant-price-row">
                   <span>Shipping</span>
-                  <span>{calculations.shipping === 0 ? 'Free' : formatCurrency(calculations.shipping)}</span>
+                  <span className="shipping-value">{calculations.shipping === 0 ? 'FREE' : formatCurrency(calculations.shipping)}</span>
                 </div>
-                <div className="price-row total">
-                  <span>Total</span>
-                  <span>{formatCurrency(calculations.grandTotal)}</span>
+                <div className="elegant-price-row elegant-total-row">
+                  <span>Total Amount</span>
+                  <span className="total-amount">{formatCurrency(calculations.grandTotal)}</span>
                 </div>
               </div>
 
               {/* Delivery Date */}
               {deliveryDate && (
-                <div className="delivery-info">
-                  <h3>Estimated Delivery</h3>
-                  <p>{deliveryDate}</p>
+                <div className="elegant-delivery-info">
+                  <div className="delivery-header">
+                    <span className="delivery-icon">🚚</span>
+                    <h3>Estimated Delivery</h3>
+                  </div>
+                  <p className="delivery-date">{deliveryDate}</p>
                 </div>
               )}
 
               {/* Place Order Button */}
               <button
-                className={`checkout-btn ${!selectedPaymentMethod || isProcessing ? 'disabled' : ''}`}
+                className={`elegant-checkout-btn ${!selectedPaymentMethod || isProcessing ? 'disabled' : ''} ${selectedPaymentMethod ? 'ready' : ''}`}
                 onClick={handlePlaceOrder}
                 disabled={!selectedPaymentMethod || isProcessing}
               >
-                {getButtonText()}
+                <span className="btn-icon">{isProcessing ? '⏳' : selectedPaymentMethod === 'cod' ? '📦' : '💳'}</span>
+                <span className="btn-text">{getButtonText()}</span>
               </button>
 
               {/* Security Info */}
-              <div className="security-info">
-                <div className="security-item">
-                  <span className="security-icon">🔒</span>
-                  <span>Secure Payment</span>
+              <div className="elegant-security-info">
+                <div className="security-title">
+                  <span className="security-shield">🛡️</span>
+                  <span>Your Security is Our Priority</span>
                 </div>
-                <div className="security-item">
-                  <span className="security-icon">✓</span>
-                  <span>SSL Encrypted</span>
-                </div>
-                <div className="security-item">
-                  <span className="security-icon">🛡️</span>
-                  <span>Safe & Trusted</span>
+                <div className="security-features">
+                  <div className="security-feature">
+                    <span className="feature-icon">🔒</span>
+                    <span>256-bit SSL Encrypted</span>
+                  </div>
+                  <div className="security-feature">
+                    <span className="feature-icon">✓</span>
+                    <span>PCI DSS Compliant</span>
+                  </div>
+                  <div className="security-feature">
+                    <span className="feature-icon">🏦</span>
+                    <span>Bank-level Security</span>
+                  </div>
                 </div>
               </div>
             </div>

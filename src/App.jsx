@@ -17,7 +17,11 @@ import CNCBangleMR5Page from './pages/CNCBangleMR5Page';
 import BangleCuttingSemiAutoPage from './pages/BangleCuttingSemiAutoPage';
 import CNCBangleCategoryPage from './pages/CNCBangleCategoryPage';
 import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
+import CheckoutPageEnhanced from './pages/CheckoutPage-enhanced';
+import OrderConfirmationPageEnhanced from './pages/OrderConfirmationPage-enhanced';
+import OrdersPage from './pages/OrdersPage';
+import LoginPageEnhanced from './pages/LoginPage-enhanced';
+import SignupPageEnhanced from './pages/SignupPage-enhanced';
 import OrderTrackingPage from './pages/OrderTrackingPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
@@ -32,7 +36,7 @@ function App() {
       <Router>
         <div className="app">
           <Navbar />
-          <main className="main-content">
+          <main className="main-content" style={{ paddingTop: '80px' }}>
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/categories" element={<CategoriesPage />} />
@@ -46,14 +50,17 @@ function App() {
               <Route path="/bangle-cutting-semi-auto" element={<BangleCuttingSemiAutoPage />} />
               <Route path="/cnc-bangle-category" element={<CNCBangleCategoryPage />} />
               <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/checkout" element={<CheckoutPageEnhanced />} />
+              <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPageEnhanced />} />
+              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/track-order/:orderId" element={<OrderTrackingPage />} />
               <Route path="/order-tracking/:orderId" element={<OrderTrackingPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/quality" element={<QualityPage />} />
               <Route path="/inquiry" element={<InquiryPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/login" element={<LoginPageEnhanced />} />
+              <Route path="/signup" element={<SignupPageEnhanced />} />
               <Route path="/profile" element={<ProfilePage />} />
               {/* Add more routes here later */}
             </Routes>

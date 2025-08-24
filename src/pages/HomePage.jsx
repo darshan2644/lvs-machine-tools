@@ -108,154 +108,121 @@ const HomePage = () => {
     return (
       <div className="loading">
         <div className="spinner"></div>
-        <p>Loading...</p>
+        <p>Loading premium experience...</p>
       </div>
     );
   }
 
   return (
-    <div className="homepage">
-      {/* Hero Section */}
+    <div className="home-page">
+      {/* Ultra-Modern Hero Section */}
       <section className="hero">
-        <div className="hero-bg">
-          <div className="hero-overlay"></div>
-        </div>
-        <div className="hero-content">
-          <div className="container">
-            <div className="hero-text">
+        <div className="hero-overlay"></div>
+        <div className="container">
+          <div className="hero-content">
+            <div className="hero-text animate-fade-in">
               <h1 className="hero-title">
-                Professional <span className="text-accent">Machine Tools</span> & Equipment
+                Professional <span className="text-gold">Machine Tools</span> & Premium Equipment
               </h1>
               <p className="hero-subtitle">
-                Your trusted partner for high-quality industrial machinery, precision tools, and professional equipment. 
-                Serving manufacturers, fabricators, and craftsmen worldwide.
+                Experience the pinnacle of precision engineering. Premium industrial machinery, 
+                cutting-edge tools, and professional equipment for discerning craftsmen worldwide.
               </p>
               <div className="hero-actions">
-                <Link to="/products" className="btn btn-primary">
-                  <span>Shop Now</span>
-                  <i className="btn-icon">→</i>
+                <Link to="/products" className="btn btn-primary btn-lg btn-ripple">
+                  <span>Explore Collection</span>
                 </Link>
-                <Link to="/categories" className="btn btn-secondary">
-                  <span>View Catalog</span>
-                  <i className="btn-icon">📋</i>
+                <Link to="/categories" className="btn btn-secondary btn-lg btn-ripple">
+                  <span>View Categories</span>
                 </Link>
               </div>
             </div>
-            <div className="hero-stats">
-              <div className="stat">
+            
+            <div className="hero-stats animate-scale-in">
+              <div className="stat hover-lift">
                 <div className="stat-number">1000+</div>
-                <div className="stat-label">Products</div>
+                <div className="stat-label">Premium Products</div>
               </div>
-              <div className="stat">
+              <div className="stat hover-lift">
                 <div className="stat-number">25+</div>
-                <div className="stat-label">Years Experience</div>
+                <div className="stat-label">Years Excellence</div>
               </div>
-              <div className="stat">
+              <div className="stat hover-lift">
                 <div className="stat-number">5000+</div>
-                <div className="stat-label">Happy Customers</div>
+                <div className="stat-label">Satisfied Clients</div>
               </div>
-              <div className="stat">
+              <div className="stat hover-lift">
                 <div className="stat-number">24/7</div>
-                <div className="stat-label">Support</div>
+                <div className="stat-label">Expert Support</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Categories Section */}
+      {/* Premium Categories Section */}
       <section className="categories section">
         <div className="container">
-          <h2 className="section-title">Product Categories</h2>
-          <p className="section-subtitle">
-            Explore our comprehensive range of professional machine tools and equipment
-          </p>
+          <div className="text-center mb-16">
+            <h2 className="section-title">Premium Product Categories</h2>
+            <p className="section-subtitle">
+              Discover our meticulously curated collection of professional-grade machinery and tools
+            </p>
+          </div>
           
-          <div className="categories-grid grid grid-3">
-            {categories.map((category) => (
-              <div key={category._id} className="category-card card">
-                {category.name === 'Faceting Machine' ? (
-                  <div className="category-content">
-                    <div className="category-icon">
+          <div className="categories-grid">
+            {categories.map((category, index) => (
+              <div key={category._id} className="category-card hover-lift animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="category-content">
+                  <div className="category-icon">
+                    {category.name === 'Faceting Machine' ? (
                       <div className="machine-icon-special">
-                        <img src="/images/lvs-logo.png" alt="LVS Logo" className="logo-overlay" />
-                        <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                          <line x1="8" y1="21" x2="16" y2="21"></line>
-                          <line x1="12" y1="17" x2="12" y2="21"></line>
-                        </svg>
-                      </div>
-                    </div>
-                    <h3 className="category-title">{category.name}</h3>
-                    <p className="category-description">{category.description}</p>
-                  </div>
-                ) : (
-                  <div className="category-content">
-                    <div className="category-icon">
-                      {category.icon === 'machine' && (
-                        <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                          <line x1="8" y1="21" x2="16" y2="21"></line>
-                          <line x1="12" y1="17" x2="12" y2="21"></line>
-                        </svg>
-                      )}
-                      {category.icon === 'tool' && (
                         <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                         </svg>
-                      )}
-                      {category.icon === 'cutting' && (
-                        <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="6" cy="6" r="3"></circle>
-                          <circle cx="6" cy="18" r="3"></circle>
-                          <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
-                          <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
-                          <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
-                        </svg>
-                      )}
-                      {category.icon === 'gear' && (
-                        <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="3"></circle>
-                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path>
-                        </svg>
-                      )}
-                      {category.icon === 'diamond' && (
-                        <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M6 3h12l4 6-10 13L2 9l4-6z"></path>
-                          <path d="M11 3 8 9l4 13 4-13-3-6"></path>
-                          <path d="M2 9h20"></path>
-                        </svg>
-                      )}
-                      {category.icon === 'engraving' && (
-                        <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-                          <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-                          <path d="M2 2l7.586 7.586"></path>
-                          <circle cx="11" cy="11" r="2"></circle>
-                        </svg>
-                      )}
-                    </div>
-                    <h3 className="category-title">{category.name}</h3>
-                    <p className="category-description">{category.description}</p>
+                        <div className="logo-overlay">
+                          <img src="/images/lvs-logo.png" alt="LVS Logo" style={{ width: '100%', height: '100%' }} />
+                        </div>
+                      </div>
+                    ) : category.icon === 'cutting' ? (
+                      <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="6" cy="6" r="3"></circle>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+                        <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+                        <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+                      </svg>
+                    ) : category.icon === 'gear' ? (
+                      <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-3.5l-3.5 3.5M9 9l-3.5-3.5m12 12l-3.5-3.5M6.5 6.5L3 3"></path>
+                      </svg>
+                    ) : category.icon === 'diamond' ? (
+                      <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M6 3h12l4 6-10 13L2 9l4-6z"></path>
+                        <path d="M11 3L8 9l4 13 4-13-3-6"></path>
+                        <path d="M2 9h20"></path>
+                      </svg>
+                    ) : (
+                      <svg className="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                      </svg>
+                    )}
                   </div>
-                )}
+                  <h3 className="category-title">{category.name}</h3>
+                  <p className="category-description">{category.description}</p>
+                </div>
                 <div className="category-btn-container">
-                  {category.name === 'Faceting Machine' ? (
-                    <Link to="/cnc-9axis-machine" className="btn btn-outline category-btn">
-                      View Details
-                    </Link>
-                  ) : (
-                    <Link to="/products" className="btn btn-outline category-btn">
-                      View Products
-                    </Link>
-                  )}
+                  <Link to={`/${category.slug}`} className="category-btn">
+                    Explore Collection
+                  </Link>
                 </div>
               </div>
             ))}
           </div>
           
-          <div className="section-actions">
-            <Link to="/categories" className="btn btn-outline view-all-btn">
+          <div className="text-center mt-16">
+            <Link to="/categories" className="btn btn-outline btn-lg">
               View All Categories
             </Link>
           </div>

@@ -19,7 +19,9 @@ const OrderSchema = new mongoose.Schema({
     price: { 
       type: Number, 
       required: true 
-    }
+    },
+    name: String,
+    image: String
   }],
   totalPrice: { 
     type: Number, 
@@ -29,6 +31,8 @@ const OrderSchema = new mongoose.Schema({
     type: Number, 
     required: true 
   },
+  subtotal: Number,
+  shipping: Number,
   paymentMethod: { 
     type: String, 
     required: true,
@@ -41,17 +45,57 @@ const OrderSchema = new mongoose.Schema({
   },
   orderStatus: { 
     type: String, 
-    default: 'placed',
-    enum: ['placed', 'packed', 'shipped', 'delivered', 'cancelled']
+    default: 'Order Placed',
+    enum: ['Order Placed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled']
   },
+  orderId: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  estimatedDelivery: {
+    type: Date,
+    required: true
+  },
+  statusHistory: [{
+    status: {
+      type: String,
+      enum: ['Order Placed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled']
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    message: String
+  }],
+  shippingAddress: {
+    fullName: String,
+    address: String,
+    city: String,
+    state: String,
+    pincode: String,
+    country: String,
+    phone: String
+  },
+  customerInfo: {
+    firstName: String,
+    lastName: String,
+    email: String,
+    phone: String,
+    company: String
+  },
+  paymentDetails: mongoose.Schema.Types.Mixed,
   razorpayOrderId: String,
   razorpayPaymentId: String,
   createdAt: { 
     type: Date, 
     default: Date.now 
   },
-  cancelledAt: Date,
-  deliveredAt: Date
+  packedAt: Date,
+  shippedAt: Date,
+  outForDeliveryAt: Date,
+  deliveredAt: Date,
+  cancelledAt: Date
 });
 
 module.exports = mongoose.model('Order', OrderSchema);

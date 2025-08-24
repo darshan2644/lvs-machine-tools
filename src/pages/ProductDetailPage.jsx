@@ -1,29 +1,117 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { addToCart, buyNow } from '../services/cartService';
 import './ProductDetailPage.css';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(0);
+
+  // Function to handle add to cart
+  const handleAddToCart = async () => {
+    if (!product) return;
+    
+    try {
+      const result = await addToCart(product._id, quantity, product.price);
+      if (result.success) {
+        alert(`${product.name} added to cart successfully!`);
+      } else {
+        alert(result.message || 'Failed to add to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add to cart');
+    }
+  };
+
+  // Function to handle buy now - Enhanced version
+  const handleBuyNow = async () => {
+    if (!product) return;
+    
+    // Create a buy now item for direct checkout
+    const buyNowItem = {
+      _id: product._id,
+      productId: {
+        _id: product._id,
+        name: product.name,
+        image: product.image || product.images?.[0],
+        images: product.images || [product.image],
+        brand: 'LVS Tools',
+        price: product.price
+      },
+      name: product.name,
+      price: product.price || 0,
+      quantity: quantity,
+      image: product.image || product.images?.[0] || '/images/placeholder-product.svg'
+    };
+    
+    console.log('Buy Now clicked for:', product.name, 'Quantity:', quantity);
+    
+    // Navigate to enhanced checkout page with buy now item
+    navigate('/checkout', {
+      state: {
+        buyNowItem: buyNowItem
+      }
+    });
+  };
 
   const fetchProductDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const [productRes, allProductsRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/products/${id}`),
-        axios.get('http://localhost:5000/api/products')
-      ]);
       
-      setProduct(productRes.data.data);
+      // Sample product data for fallback
+      const sampleProduct = {
+        _id: id,
+        name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
+        description: 'High-precision 9-axis CNC machine with automatic tool changing capability for universal cutting and engraving operations. Perfect for professional manufacturing environments.',
+        price: 250000,
+        image: '/images/cnc-9axis-main.png',
+        images: ['/images/cnc-9axis-main.png', '/images/cnc-detail-1.png', '/images/cnc-detail-2.png'],
+        category: 'cnc-machines',
+        categoryName: 'CNC Machines',
+        specifications: {
+          control: 'Fanuc System',
+          axes: '9-Axis',
+          features: [
+            'Automatic Tool Changer',
+            'High-Speed Spindle',
+            'Precision Ball Screws',
+            'Advanced Control System',
+            'Safety Interlocks'
+          ],
+          applications: [
+            'Metal Cutting',
+            'Precision Engraving',
+            'Component Machining',
+            'Prototype Development'
+          ]
+        }
+      };
       
-      // Get related products from same category
-      const related = allProductsRes.data.data
-        .filter(p => p.category === productRes.data.data.category && p._id !== id)
-        .slice(0, 4);
-      setRelatedProducts(related);
+      try {
+        const [productRes, allProductsRes] = await Promise.all([
+          axios.get(`http://localhost:5000/api/products/${id}`),
+          axios.get('http://localhost:5000/api/products')
+        ]);
+        
+        setProduct(productRes.data.data);
+        
+        // Get related products from same category
+        const related = allProductsRes.data.data
+          .filter(p => p.category === productRes.data.data.category && p._id !== id)
+          .slice(0, 4);
+        setRelatedProducts(related);
+      } catch (apiError) {
+        console.log('Using sample data due to API error');
+        setProduct(sampleProduct);
+        setRelatedProducts([]);
+      }
     } catch (error) {
       console.error('Error fetching product details:', error);
     } finally {
@@ -37,7 +125,7 @@ const ProductDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
+      <div className="elegant-loading">
         <div className="loading-spinner"></div>
         <p>Loading product details...</p>
       </div>
@@ -46,137 +134,150 @@ const ProductDetailPage = () => {
 
   if (!product) {
     return (
-      <div className="error-container">
-        <h2>Product Not Found</h2>
-        <p>The product you're looking for doesn't exist.</p>
-        <Link to="/products" className="btn btn-primary">View All Products</Link>
+      <div className="elegant-error">
+        <div className="error-content animate-fade-in">
+          <h2>Product Not Found</h2>
+          <p>The product you're looking for doesn't exist.</p>
+          <Link to="/products" className="btn btn-primary">View All Products</Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="product-detail-page">
-      {/* Breadcrumb */}
+    <div className="elegant-product-detail">
+      {/* Breadcrumb Navigation */}
       <section className="breadcrumb-section">
         <div className="container">
-          <nav className="breadcrumb">
-            <Link to="/">Home</Link>
-            <span>/</span>
-            <Link to="/products">Products</Link>
-            <span>/</span>
-            <Link to={`/products?category=${product.category}`}>{product.categoryName}</Link>
-            <span>/</span>
-            <span>{product.name}</span>
+          <nav className="elegant-breadcrumb animate-slide-in-left">
+            <Link to="/" className="breadcrumb-link">Home</Link>
+            <span className="breadcrumb-separator">•</span>
+            <Link to="/products" className="breadcrumb-link">Products</Link>
+            <span className="breadcrumb-separator">•</span>
+            <Link to={`/products?category=${product.category}`} className="breadcrumb-link">
+              {product.categoryName}
+            </Link>
+            <span className="breadcrumb-separator">•</span>
+            <span className="breadcrumb-current">{product.name}</span>
           </nav>
         </div>
       </section>
 
-      {/* Product Details */}
-      <section className="product-detail-section">
+      {/* Main Product Section */}
+      <section className="main-product-section">
         <div className="container">
-          <div className="product-detail-grid">
-            <div className="product-image-section">
-              <div className="main-image">
+          <div className="product-layout">
+            {/* Product Images */}
+            <div className="product-images animate-slide-in-left">
+              <div className="main-image-container">
                 <img 
-                  src={product.image || '/images/placeholder-product.svg'} 
+                  src={product.images?.[selectedImage] || product.image || '/images/placeholder-product.svg'} 
                   alt={product.name}
+                  className="main-product-image"
                   onError={(e) => {
                     e.target.src = '/images/placeholder-product.svg';
                   }}
                 />
-              </div>
-              <div className="image-gallery">
-                <div className="thumbnail active">
-                  <img 
-                    src={product.image || '/images/placeholder-product.svg'} 
-                    alt={product.name}
-                  />
+                <div className="image-badges">
+                  <span className="quality-badge">Premium Quality</span>
                 </div>
               </div>
+              
+              {product.images && product.images.length > 1 && (
+                <div className="image-thumbnails">
+                  {product.images.map((img, index) => (
+                    <div 
+                      key={index}
+                      className={`thumbnail ${selectedImage === index ? 'active' : ''}`}
+                      onClick={() => setSelectedImage(index)}
+                    >
+                      <img src={img} alt={`${product.name} view ${index + 1}`} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="product-info-section">
-              <div className="product-category">
-                <Link to={`/products?category=${product.category}`}>
-                  {product.categoryName}
-                </Link>
-              </div>
-              
-              <h1 className="product-title">{product.name}</h1>
-              
-              <div className="product-description">
-                <p>{product.description}</p>
+            {/* Product Information */}
+            <div className="product-info animate-slide-in-right">
+              <div className="product-header">
+                <span className="product-category-tag">{product.categoryName}</span>
+                <h1 className="product-name">{product.name}</h1>
+                <p className="product-description">{product.description}</p>
               </div>
 
-              <div className="product-specifications">
-                <h3>Specifications</h3>
-                {product.specifications ? (
-                  <div className="specs-grid">
-                    <div className="spec-item">
-                      <strong>Control System:</strong> {product.specifications.control}
-                    </div>
-                    <div className="spec-item">
-                      <strong>Axes:</strong> {product.specifications.axes}
-                    </div>
-                    <div className="spec-item">
-                      <strong>Key Features:</strong>
-                      <ul>
-                        {product.specifications.features?.map((feature, index) => (
-                          <li key={index}>{feature}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="spec-item">
-                      <strong>Applications:</strong>
-                      <ul>
-                        {product.specifications.applications?.map((app, index) => (
-                          <li key={index}>{app}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                ) : (
-                  <ul>
-                    <li>High-precision manufacturing</li>
-                    <li>Professional grade quality</li>
-                    <li>Durable construction</li>
-                    <li>Expert technical support included</li>
-                    <li>Warranty coverage available</li>
-                  </ul>
-                )}
+              <div className="pricing-section">
+                <div className="price-container">
+                  <span className="current-price">
+                    {product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'Contact for Price'}
+                  </span>
+                  {product.price && (
+                    <span className="original-price">
+                      ₹{(product.price * 1.15).toLocaleString('en-IN')}
+                    </span>
+                  )}
+                  {product.price && (
+                    <span className="discount-badge">Save 13%</span>
+                  )}
+                </div>
               </div>
 
-              <div className="product-actions">
-                <button className="btn btn-primary btn-large">
-                  <span>Request Quote</span>
-                  <i className="btn-icon">💬</i>
+              <div className="quantity-section">
+                <label className="quantity-label">Quantity:</label>
+                <div className="quantity-controls">
+                  <button 
+                    className="quantity-btn"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  >
+                    −
+                  </button>
+                  <span className="quantity-value">{quantity}</span>
+                  <button 
+                    className="quantity-btn"
+                    onClick={() => setQuantity(quantity + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="action-buttons">
+                <button className="btn-buy-now" onClick={handleBuyNow}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 22C9.55228 22 10 21.5523 10 21C10 20.4477 9.55228 20 9 20C8.44772 20 8 20.4477 8 21C8 21.5523 8.44772 22 9 22Z" fill="currentColor"/>
+                    <path d="M20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20C19.4477 20 19 20.4477 19 21C19 21.5523 19.4477 22 20 22Z" fill="currentColor"/>
+                    <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Buy Now
                 </button>
-                <button className="btn btn-secondary btn-large">
-                  <span>Contact Sales</span>
-                  <i className="btn-icon">📞</i>
+                <button className="btn-add-to-cart" onClick={handleAddToCart}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.7 15.3C4.3 15.7 4.6 16.4 5.1 16.4H17M17 13V16.4H17M9 19.5A1.5 1.5 0 1 1 10.5 21A1.5 1.5 0 0 1 9 19.5ZM20 19.5A1.5 1.5 0 1 1 21.5 21A1.5 1.5 0 0 1 20 19.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Add to Cart
                 </button>
               </div>
 
-              <div className="product-info-cards">
-                <div className="info-card">
-                  <div className="info-icon">🚚</div>
-                  <div className="info-content">
-                    <h4>Free Shipping</h4>
-                    <p>On orders over $500</p>
+              <div className="product-features">
+                <div className="feature-item">
+                  <div className="feature-icon">🚚</div>
+                  <div className="feature-text">
+                    <strong>Free Shipping</strong>
+                    <span>On orders above ₹50,000</span>
                   </div>
                 </div>
-                <div className="info-card">
-                  <div className="info-icon">🛡️</div>
-                  <div className="info-content">
-                    <h4>Warranty</h4>
-                    <p>Manufacturer warranty included</p>
+                <div className="feature-item">
+                  <div className="feature-icon">🛡️</div>
+                  <div className="feature-text">
+                    <strong>2 Year Warranty</strong>
+                    <span>Comprehensive coverage</span>
                   </div>
                 </div>
-                <div className="info-card">
-                  <div className="info-icon">🔧</div>
-                  <div className="info-content">
-                    <h4>Expert Support</h4>
-                    <p>Technical assistance available</p>
+                <div className="feature-item">
+                  <div className="feature-icon">🔧</div>
+                  <div className="feature-text">
+                    <strong>Expert Support</strong>
+                    <span>24/7 technical assistance</span>
                   </div>
                 </div>
               </div>
@@ -185,28 +286,83 @@ const ProductDetailPage = () => {
         </div>
       </section>
 
+      {/* Product Specifications */}
+      <section className="specifications-section">
+        <div className="container">
+          <div className="specs-container animate-fade-in">
+            <h2 className="section-title">Technical Specifications</h2>
+            
+            {product.specifications ? (
+              <div className="specs-grid">
+                <div className="spec-card">
+                  <h3>Control System</h3>
+                  <p>{product.specifications.control}</p>
+                </div>
+                <div className="spec-card">
+                  <h3>Axes Configuration</h3>
+                  <p>{product.specifications.axes}</p>
+                </div>
+                <div className="spec-card">
+                  <h3>Key Features</h3>
+                  <ul>
+                    {product.specifications.features?.map((feature, index) => (
+                      <li key={index}>{feature}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="spec-card">
+                  <h3>Applications</h3>
+                  <ul>
+                    {product.specifications.applications?.map((app, index) => (
+                      <li key={index}>{app}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className="default-specs">
+                <div className="spec-item">
+                  <h4>✨ High-Precision Manufacturing</h4>
+                  <p>Advanced engineering for superior accuracy and reliability</p>
+                </div>
+                <div className="spec-item">
+                  <h4>🔧 Professional Grade Quality</h4>
+                  <p>Built to meet industrial standards with premium components</p>
+                </div>
+                <div className="spec-item">
+                  <h4>🛡️ Durable Construction</h4>
+                  <p>Robust design engineered for long-lasting performance</p>
+                </div>
+                <div className="spec-item">
+                  <h4>🎯 Expert Technical Support</h4>
+                  <p>Comprehensive support and training included with purchase</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <section className="related-products-section">
           <div className="container">
-            <h2 className="section-title">Related Products</h2>
+            <h2 className="section-title">You Might Also Like</h2>
             <div className="related-products-grid">
               {relatedProducts.map((relatedProduct) => (
-                <div key={relatedProduct._id} className="related-product-card">
-                  <div className="related-product-image">
+                <div key={relatedProduct._id} className="related-product-card hover-lift">
+                  <div className="related-image">
                     <img 
                       src={relatedProduct.image || '/images/placeholder-product.svg'} 
                       alt={relatedProduct.name}
                     />
                   </div>
-                  <div className="related-product-info">
-                    <h4 className="related-product-title">{relatedProduct.name}</h4>
-                    <p className="related-product-description">
-                      {relatedProduct.description.substring(0, 80)}...
-                    </p>
+                  <div className="related-info">
+                    <h4>{relatedProduct.name}</h4>
+                    <p>{relatedProduct.description?.substring(0, 60)}...</p>
                     <Link 
                       to={`/product/${relatedProduct._id}`} 
-                      className="btn btn-outline btn-small"
+                      className="related-btn"
                     >
                       View Details
                     </Link>
