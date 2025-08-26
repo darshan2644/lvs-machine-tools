@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Test Order</title>
+</head>
+<body>
+    <h1>Add Test Order to localStorage</h1>
+    <button onclick="addTestOrder()">Add Test Order</button>
+    <button onclick="viewOrders()">View Orders in localStorage</button>
+    <button onclick="clearOrders()">Clear All Orders</button>
+    
+    <div id="result"></div>
+
+    <script>
+        function addTestOrder() {
+            const testOrder = {
+                _id: 'LVS' + Date.now(),
+                orderId: 'LVS' + Date.now(),
+                userId: 'demo-user-123',
+                orderStatus: 'Order Placed',
+                createdAt: new Date().toISOString(),
+                items: [
+                    {
+                        productId: 'cnc-9axis',
+                        name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
+                        quantity: 1,
+                        price: 250000,
+                        image: '/images/cnc-9axis-main.png'
+                    }
+                ],
+                totalAmount: 250000,
+                paymentMethod: 'Cash on Delivery',
+                shippingAddress: {
+                    street: '123 Test Street',
+                    city: 'Test City',
+                    state: 'Test State',
+                    zipCode: '12345'
+                }
+            };
+
+            // Get existing orders
+            const existingOrders = JSON.parse(localStorage.getItem('lvsOrders') || '[]');
+            
+            // Add new order
+            existingOrders.push(testOrder);
+            
+            // Save back to localStorage
+            localStorage.setItem('lvsOrders', JSON.stringify(existingOrders));
+            
+            document.getElementById('result').innerHTML = `
+                <h3>✅ Test Order Added!</h3>
+                <p>Order ID: ${testOrder.orderId}</p>
+                <p>Total Orders: ${existingOrders.length}</p>
+                <p>Go to <a href="http://localhost:5173/orders" target="_blank">Orders Page</a> to see it!</p>
+            `;
+            
+            console.log('Test order added:', testOrder);
+        }
+
+        function viewOrders() {
+            const orders = JSON.parse(localStorage.getItem('lvsOrders') || '[]');
+            document.getElementById('result').innerHTML = `
+                <h3>Current Orders (${orders.length}):</h3>
+                <pre>${JSON.stringify(orders, null, 2)}</pre>
+            `;
+        }
+
+        function clearOrders() {
+            localStorage.removeItem('lvsOrders');
+            document.getElementById('result').innerHTML = '<h3>🗑️ All orders cleared!</h3>';
+        }
+    </script>
+</body>
+</html>

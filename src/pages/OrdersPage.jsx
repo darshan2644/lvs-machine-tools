@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { syncOrdersToBackend } from '../services/cartService';
 import './OrdersPage.css';
 
 const OrdersPage = () => {
@@ -9,9 +10,37 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all'); // all, pending, delivered, cancelled
+  const [cancelling, setCancelling] = useState(null); // Track which order is being cancelled
 
   useEffect(() => {
     fetchOrders();
+
+    // Debug: Show localStorage contents
+    const localOrders = localStorage.getItem('lvsOrders');
+    console.log('💾 LocalStorage orders on page load:', localOrders);
+    if (localOrders) {
+      try {
+        const parsed = JSON.parse(localOrders);
+        console.log('📊 Parsed localStorage orders:', parsed.length, 'orders found');
+      } catch (e) {
+        console.error('❌ Error parsing localStorage orders:', e);
+      }
+    }
+
+    // Listen for new orders being placed
+    const handleOrderPlaced = (event) => {
+      console.log('New order placed, refreshing orders list:', event.detail);
+      setTimeout(() => {
+        fetchOrders(); // Refresh orders after a short delay
+      }, 1000);
+    };
+
+    window.addEventListener('orderPlaced', handleOrderPlaced);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('orderPlaced', handleOrderPlaced);
+    };
   }, []);
 
   const fetchOrders = async () => {
@@ -21,14 +50,14 @@ const OrdersPage = () => {
       
       // First try backend API
       try {
-        const response = await axios.get(`http://localhost:5000/api/order/user/${userId}`);
+        const response = await axios.get(`http://localhost:5000/api/orders/user/${userId}`);
         if (response.data.success) {
           setOrders(response.data.orders);
           console.log('Orders loaded from backend:', response.data.orders);
         } else {
           throw new Error('Backend returned no orders');
         }
-      } catch (backendError) {
+      } catch {
         console.log('Backend not available, loading from localStorage');
         // Fallback to localStorage
         const savedOrders = localStorage.getItem('lvsOrders');
@@ -43,6 +72,90 @@ const OrdersPage = () => {
       console.error('Error fetching orders:', error);
       setError('Failed to load orders');
       setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to refresh orders
+  const refreshOrders = () => {
+    fetchOrders();
+  };
+
+  // Function to create a test order for demonstration
+  const createTestOrder = () => {
+    const testOrder = {
+      _id: 'LVS' + Date.now(),
+      orderId: 'LVS' + Date.now(),
+      userId: localStorage.getItem('userId') || 'demo-user-123',
+      orderStatus: 'Order Placed',
+      createdAt: new Date().toISOString(),
+      items: [
+        {
+          productId: 'cnc-9axis',
+          name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
+          quantity: 1,
+          price: 250000,
+          image: '/images/cnc-9axis-main.png'
+        }
+      ],
+      totalAmount: 250000,
+      paymentMethod: 'Cash on Delivery',
+      shippingAddress: {
+        fullName: 'Test Customer',
+        address: '123 Test Street',
+        city: 'Test City',
+        state: 'Test State',
+        pincode: '123456'
+      }
+    };
+
+    // Add to localStorage
+    const existingOrders = JSON.parse(localStorage.getItem('lvsOrders') || '[]');
+    existingOrders.push(testOrder);
+    localStorage.setItem('lvsOrders', JSON.stringify(existingOrders));
+    
+    // Update state immediately
+    setOrders(existingOrders);
+    
+    console.log('✅ Test order created:', testOrder);
+    alert(`✅ Test order ${testOrder.orderId} created successfully!`);
+  };
+
+  // Function to clear all orders
+  const clearAllOrders = () => {
+    if (window.confirm('🗑️ Are you sure you want to delete ALL orders?\n\nThis action cannot be undone!')) {
+      // Clear localStorage
+      localStorage.removeItem('lvsOrders');
+      // Clear state
+      setOrders([]);
+      setError('');
+      console.log('✅ All orders cleared successfully');
+      alert('🗑️ All orders have been cleared!');
+    }
+  };
+
+  // Function to sync localStorage orders to backend
+  const handleSyncOrders = async () => {
+    try {
+      setLoading(true);
+      console.log('🔄 Starting order sync to backend...');
+      
+      const result = await syncOrdersToBackend();
+      
+      if (result.success) {
+        console.log('✅ Sync completed:', result.message);
+        alert(`✅ ${result.message}`);
+        
+        // Refresh orders after sync
+        await fetchOrders();
+      } else {
+        console.error('❌ Sync failed:', result.error);
+        alert(`❌ Sync failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error during sync:', error);
+      alert('❌ Error during sync. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -97,6 +210,8 @@ const OrdersPage = () => {
         return '✅';
       case 'cancelled':
         return '❌';
+      case 'processing':
+        return '⚙️';
       default:
         return '📄';
     }
@@ -127,6 +242,86 @@ const OrdersPage = () => {
     localStorage.setItem('lvsCartItems', JSON.stringify(cartItems));
     window.dispatchEvent(new CustomEvent('cartUpdated'));
     navigate('/checkout');
+  };
+
+  const handleCancelOrder = async (order) => {
+    console.log('🔴 Cancel button clicked for order:', order.orderId || order._id, 'Status:', order.orderStatus);
+    
+    // Check if order can be cancelled
+    const cancellableStatuses = ['order placed', 'placed', 'packed', 'processing', 'confirmed', 'pending'];
+    if (!cancellableStatuses.includes(order.orderStatus?.toLowerCase())) {
+      setError('This order cannot be cancelled as it has already been shipped or delivered.');
+      alert('❌ This order cannot be cancelled as it has already been shipped or delivered.');
+      return;
+    }
+
+    // Confirm cancellation
+    if (!window.confirm(`🚨 Are you sure you want to cancel order ${order.orderId || order._id}?\n\nThis action cannot be undone.`)) {
+      return;
+    }
+
+    console.log('✅ User confirmed cancellation, proceeding...');
+    setCancelling(order._id || order.orderId);
+    setError('');
+
+    try {
+      // Try to cancel via backend API
+      try {
+        const response = await axios.patch(`http://localhost:5000/api/orders/${order._id || order.orderId}/cancel`, {
+          cancelReason: 'Cancelled by customer'
+        });
+
+        if (response.data.success) {
+          // Update local orders state
+          setOrders(prevOrders => 
+            prevOrders.map(o => 
+              (o._id === order._id || o.orderId === order.orderId) 
+                ? { ...o, orderStatus: 'Cancelled', cancelledAt: new Date().toISOString(), cancelReason: 'Cancelled by customer' }
+                : o
+            )
+          );
+          
+          // Show success message
+          setError(''); // Clear any previous errors
+          alert(`Order ${order.orderId || order._id} has been cancelled successfully! 🎯`);
+          console.log('✅ Order cancelled via backend:', response.data);
+        } else {
+          throw new Error(response.data.message || 'Failed to cancel order');
+        }
+  } catch {
+        console.log('Backend not available, updating locally');
+        
+        // Fallback: Update localStorage
+        const savedOrders = localStorage.getItem('lvsOrders');
+        if (savedOrders) {
+          const parsedOrders = JSON.parse(savedOrders);
+          const updatedOrders = parsedOrders.map(o => 
+            (o._id === order._id || o.orderId === order.orderId) 
+              ? { ...o, orderStatus: 'Cancelled', cancelledAt: new Date().toISOString(), cancelReason: 'Cancelled by customer' }
+              : o
+          );
+          localStorage.setItem('lvsOrders', JSON.stringify(updatedOrders));
+        }
+
+        // Update state
+        setOrders(prevOrders => 
+          prevOrders.map(o => 
+            (o._id === order._id || o.orderId === order.orderId) 
+              ? { ...o, orderStatus: 'Cancelled', cancelledAt: new Date().toISOString(), cancelReason: 'Cancelled by customer' }
+              : o
+          )
+        );
+
+        setError(''); // Clear any previous errors
+        alert(`Order ${order.orderId || order._id} has been cancelled successfully! 📱 (Updated locally)`);
+        console.log('✅ Order cancelled locally (backend unavailable)');
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      setError('Failed to cancel order. Please try again or contact support.');
+    } finally {
+      setCancelling(null);
+    }
   };
 
   if (loading) {
@@ -198,6 +393,108 @@ const OrdersPage = () => {
               {orders.filter(o => o.orderStatus?.toLowerCase() === 'cancelled').length}
             </span>
           </button>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="orders-actions" style={{ marginTop: '16px', textAlign: 'center', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button 
+            onClick={refreshOrders}
+            className="btn"
+            style={{
+              backgroundColor: '#3B82F6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 24px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#2563EB';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#3B82F6';
+            }}
+          >
+            🔄 Refresh Orders
+          </button>
+
+          <button 
+            onClick={createTestOrder}
+            className="btn"
+            style={{
+              backgroundColor: '#10B981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 24px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#059669';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#10B981';
+            }}
+          >
+            ➕ Create Test Order
+          </button>
+
+          <button 
+            onClick={handleSyncOrders}
+            className="btn"
+            style={{
+              backgroundColor: '#8B5CF6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 24px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#7C3AED';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#8B5CF6';
+            }}
+            title="Sync localStorage orders to backend database"
+          >
+            🔄 Sync to Backend
+          </button>
+          
+          {orders.length > 0 && (
+            <button 
+              onClick={clearAllOrders}
+              className="btn"
+              style={{
+                backgroundColor: '#EF4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '12px 24px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#DC2626';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#EF4444';
+              }}
+            >
+              🗑️ Clear All Orders
+            </button>
+          )}
         </div>
 
         {error && (
@@ -324,6 +621,48 @@ const OrdersPage = () => {
                         >
                           <span className="btn-icon">📍</span>
                           <span>Track Order</span>
+                        </button>
+                      )}
+
+                      {/* Cancel Order Button - for cancellable orders */}
+                      {(order.orderStatus && 
+                        ['order placed', 'placed', 'packed', 'processing', 'pending', 'confirmed'].includes(order.orderStatus.toLowerCase()) &&
+                        !['delivered', 'shipped', 'cancelled', 'out for delivery'].includes(order.orderStatus.toLowerCase())
+                      ) && (
+                        <button 
+                          onClick={() => {
+                            console.log('🔴 Cancel button clicked!', order);
+                            handleCancelOrder(order);
+                          }}
+                          className="btn btn-sm"
+                          style={{ 
+                            borderColor: '#EF4444', 
+                            color: '#EF4444',
+                            backgroundColor: 'transparent',
+                            border: '1px solid #EF4444',
+                            borderRadius: '6px',
+                            padding: '6px 12px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#EF4444';
+                            e.target.style.color = 'white';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'transparent';
+                            e.target.style.color = '#EF4444';
+                          }}
+                          disabled={cancelling === (order._id || order.orderId)}
+                        >
+                          <span className="btn-icon" style={{ marginRight: '4px' }}>
+                            {cancelling === (order._id || order.orderId) ? '⏳' : '❌'}
+                          </span>
+                          <span>
+                            {cancelling === (order._id || order.orderId) ? 'Cancelling...' : 'Cancel Order'}
+                          </span>
                         </button>
                       )}
 

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Order Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .btn { padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .result { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Test Order Flow</h1>
+    
+    <h2>Step 1: Set up cart items</h2>
+    <button class="btn" onclick="setupCart()">Setup Test Cart</button>
+    
+    <h2>Step 2: Place COD Order</h2>
+    <button class="btn" onclick="placeCODOrder()">Place COD Order</button>
+    
+    <h2>Step 3: Check Order Status</h2>
+    <input type="text" id="orderIdInput" placeholder="Enter Order ID" style="padding: 8px; margin: 10px 0; width: 200px;">
+    <button class="btn" onclick="checkOrderStatus()">Check Order Status</button>
+    
+    <h2>Step 4: Update Order Status</h2>
+    <select id="statusSelect" style="padding: 8px; margin: 10px 0;">
+        <option value="Packed">Packed</option>
+        <option value="Shipped">Shipped</option>
+        <option value="Out for Delivery">Out for Delivery</option>
+        <option value="Delivered">Delivered</option>
+    </select>
+    <button class="btn" onclick="updateOrderStatus()">Update Status</button>
+    
+    <div id="result" class="result"></div>
+
+    <script>
+        let currentOrderId = '';
+        
+        function log(message) {
+            document.getElementById('result').textContent = message;
+            console.log(message);
+        }
+        
+        function setupCart() {
+            const testCartItems = [
+                {
+                    _id: "6774f40d8a61c3bcdb78b2dc",
+                    name: "CNC Bangle Cutting Machine",
+                    price: 125000,
+                    quantity: 1,
+                    image: "/images/cnc-bangle-main.png",
+                    description: "High precision CNC bangle cutting machine"
+                },
+                {
+                    _id: "6774f40d8a61c3bcdb78b2dd",
+                    name: "9-Axis CNC Machine", 
+                    price: 275000,
+                    quantity: 1,
+                    image: "/images/cnc-9axis-main.png",
+                    description: "Advanced 9-axis CNC machine for complex operations"
+                }
+            ];
+            
+            localStorage.setItem('lvsCartItems', JSON.stringify(testCartItems));
+            log('✅ Test cart items set up successfully!\\nItems: ' + JSON.stringify(testCartItems, null, 2));
+        }
+        
+        async function placeCODOrder() {
+            try {
+                const cartItems = JSON.parse(localStorage.getItem('lvsCartItems') || '[]');
+                if (cartItems.length === 0) {
+                    log('❌ No cart items found. Please setup cart first.');
+                    return;
+                }
+                
+                const orderData = {
+                    userId: 'demo-user-123',
+                    items: cartItems.map(item => ({
+                        productId: item._id,
+                        quantity: item.quantity,
+                        price: item.price
+                    })),
+                    totalPrice: 400000,
+                    tax: 72000,
+                    paymentMethod: 'cod',
+                    shippingAddress: {
+                        fullName: 'Test User',
+                        address: '123 Test Street',
+                        city: 'Rajkot',
+                        state: 'Gujarat',
+                        pincode: '360001',
+                        phone: '9876543210'
+                    }
+                };
+                
+                log('📤 Placing order...\\n' + JSON.stringify(orderData, null, 2));
+                
+                const response = await fetch('http://localhost:5000/api/orders/place', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const result = await response.json();
+                log('📦 Order Response:\\n' + JSON.stringify(result, null, 2));
+                
+                if (result.success) {
+                    currentOrderId = result.order.orderId || result.order._id;
+                    document.getElementById('orderIdInput').value = currentOrderId;
+                    
+                    // Navigate to order confirmation
+                    setTimeout(() => {
+                        window.location.href = `/order-confirmation/${currentOrderId}`;
+                    }, 2000);
+                }
+            } catch (error) {
+                log('❌ Error placing order: ' + error.message);
+            }
+        }
+        
+        async function checkOrderStatus() {
+            try {
+                const orderId = document.getElementById('orderIdInput').value || currentOrderId;
+                if (!orderId) {
+                    log('❌ Please enter an order ID');
+                    return;
+                }
+                
+                log('🔍 Checking order status for: ' + orderId);
+                
+                const response = await fetch(`http://localhost:5000/api/orders/${orderId}`);
+                const result = await response.json();
+                
+                log('📊 Order Status:\\n' + JSON.stringify(result, null, 2));
+            } catch (error) {
+                log('❌ Error checking order status: ' + error.message);
+            }
+        }
+        
+        async function updateOrderStatus() {
+            try {
+                const orderId = document.getElementById('orderIdInput').value || currentOrderId;
+                const newStatus = document.getElementById('statusSelect').value;
+                
+                if (!orderId) {
+                    log('❌ Please enter an order ID');
+                    return;
+                }
+                
+                log(`🔄 Updating order ${orderId} to status: ${newStatus}`);
+                
+                const response = await fetch(`http://localhost:5000/api/orders/${orderId}/update`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: newStatus,
+                        message: `Order ${newStatus.toLowerCase()}`
+                    })
+                });
+                
+                const result = await response.json();
+                log('✅ Status Update Response:\\n' + JSON.stringify(result, null, 2));
+                
+                // Navigate to tracking page
+                setTimeout(() => {
+                    window.location.href = `/track-order/${orderId}`;
+                }, 2000);
+            } catch (error) {
+                log('❌ Error updating order status: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

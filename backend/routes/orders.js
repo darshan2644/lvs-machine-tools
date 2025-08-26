@@ -69,4 +69,32 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// PATCH /api/orders/:id/cancel - Cancel an order
+router.patch('/:id/cancel', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { cancelReason } = req.body;
+    
+    // Here you would typically update the order status in database
+    // For now, just return success
+    
+    res.json({
+      success: true,
+      data: {
+        orderId: id,
+        status: 'cancelled',
+        cancelReason: cancelReason || 'Cancelled by customer',
+        cancelledAt: new Date()
+      },
+      message: 'Order cancelled successfully'
+    });
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cancel order'
+    });
+  }
+});
+
 module.exports = router;

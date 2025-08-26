@@ -406,6 +406,71 @@ router.patch('/:id/update', async (req, res) => {
   }
 });
 
+// Cancel order endpoint
+router.patch('/:id/cancel', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { cancelReason } = req.body;
+
+    // Find order
+    let order = await Order.findById(id);
+    if (!order) {
+      order = await Order.findOne({ orderId: id });
+    }
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Check if order can be cancelled
+    const cancellableStatuses = ['Order Placed', 'Packed'];
+    if (!cancellableStatuses.includes(order.orderStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: 'This order cannot be cancelled as it has already been shipped or delivered.'
+      });
+    }
+
+    // Update order status to cancelled
+    const currentTime = new Date();
+    order.orderStatus = 'Cancelled';
+    order.cancelledAt = currentTime;
+    order.cancelReason = cancelReason || 'Cancelled by customer';
+
+    // Add to status history
+    order.statusHistory.push({
+      status: 'Cancelled',
+      timestamp: currentTime,
+      message: cancelReason || 'Order cancelled by customer'
+    });
+
+    await order.save();
+
+    res.json({
+      success: true,
+      message: 'Order cancelled successfully',
+      order: {
+        _id: order._id,
+        orderId: order.orderId,
+        orderStatus: order.orderStatus,
+        cancelledAt: order.cancelledAt,
+        cancelReason: order.cancelReason,
+        statusHistory: order.statusHistory
+      }
+    });
+  } catch (error) {
+    console.error('Cancel order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error cancelling order',
+      error: error.message
+    });
+  }
+});
+
 // Verify Razorpay payment
 router.post('/verify-payment', async (req, res) => {
   try {

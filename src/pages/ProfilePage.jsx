@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import './ProfilePage.css';
@@ -16,7 +16,49 @@ const ProfilePage = () => {
   }
 
   // Load user orders
-  useEffect(() => {
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  (() => {
     const loadOrders = async () => {
       try {
         setLoading(true);
@@ -70,22 +112,27 @@ const ProfilePage = () => {
       }
     };
 
+    // Always run the effect, but only load orders and add listeners if user exists
     if (user) {
       loadOrders();
-      
+
       // Listen for order updates
       const handleOrderUpdate = () => {
         console.log('Order update event received, reloading orders...');
         loadOrders();
       };
-      
+
       window.addEventListener('orderPlaced', handleOrderUpdate);
       window.addEventListener('orderUpdated', handleOrderUpdate);
-      
+
       return () => {
         window.removeEventListener('orderPlaced', handleOrderUpdate);
         window.removeEventListener('orderUpdated', handleOrderUpdate);
       };
+    } else {
+      // If no user, clear orders and loading state
+      setOrders([]);
+      setLoading(false);
     }
   }, [user]);
 

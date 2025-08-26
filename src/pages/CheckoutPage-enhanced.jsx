@@ -235,6 +235,16 @@ const CheckoutPageEnhanced = () => {
       localStorage.removeItem('lvsCartItems');
       window.dispatchEvent(new CustomEvent('cartUpdated'));
       
+      // Dispatch order placed event for profile page updates
+      window.dispatchEvent(new CustomEvent('orderPlaced', {
+        detail: { 
+          orderId: response.data.order.orderId, 
+          type: 'enhanced-checkout-cod',
+          order: response.data.order 
+        }
+      }));
+      console.log('Order placed event dispatched from enhanced COD checkout');
+      
       // Navigate to order confirmation
       navigate(`/order-confirmation/${response.data.order.orderId}`, {
         state: { 
@@ -294,6 +304,11 @@ const CheckoutPageEnhanced = () => {
     if (response.data.success) {
       localStorage.removeItem('lvsCartItems');
       window.dispatchEvent(new CustomEvent('cartUpdated'));
+      
+      // Dispatch orderPlaced event for profile page integration
+      window.dispatchEvent(new CustomEvent('orderPlaced', {
+        detail: { order: response.data.order }
+      }));
       
       navigate(`/order-confirmation/${response.data.order.orderId}`, {
         state: { 

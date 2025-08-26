@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { addToCart, buyNow } from '../services/cartService';
+import { addToCart } from '../services/cartService';
 import './ProductsPage.css';
 
 // Sample products for fallback
@@ -62,21 +62,6 @@ const ProductsPage = () => {
   };
 
   // Function to handle buy now
-  const handleBuyNow = async (product) => {
-    console.log('Buy now clicked for product:', product);
-    try {
-      const result = await buyNow(product._id, 1, product.price);
-      console.log('Buy now result:', result);
-      if (result.success) {
-        navigate(`/order-tracking/${result.orderId}`);
-      } else {
-        alert(result.message || 'Failed to place order');
-      }
-    } catch (error) {
-      console.error('Error in buy now:', error);
-      alert('Failed to place order');
-    }
-  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -103,13 +88,15 @@ const ProductsPage = () => {
 
   useEffect(() => {
     fetchData();
-    
+  }, [fetchData]);
+
+  useEffect(() => {
     // Set initial category from URL parameters
     const categoryParam = searchParams.get('category');
     if (categoryParam) {
       setSelectedCategory(categoryParam);
     }
-  }, [searchParams, fetchData]);
+  }, [searchParams]);
 
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;

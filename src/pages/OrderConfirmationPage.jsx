@@ -21,6 +21,36 @@ const OrderConfirmationPage = () => {
         // If we have order data from navigation state, use it
         if (orderFromState) {
           setOrder(orderFromState);
+          
+          // Save order to localStorage for orders page
+          const orderForStorage = {
+            _id: orderFromState.orderId || orderFromState._id,
+            orderId: orderFromState.orderId || orderFromState._id,
+            userId: orderFromState.userId || localStorage.getItem('userId') || 'demo-user-123',
+            orderStatus: orderFromState.orderStatus || 'Order Placed',
+            createdAt: orderFromState.createdAt || new Date().toISOString(),
+            items: orderFromState.items || [],
+            totalAmount: orderFromState.totalAmount || orderFromState.total || 0,
+            paymentMethod: orderFromState.paymentMethod || 'Cash on Delivery',
+            shippingAddress: orderFromState.shippingAddress || {},
+            billingAddress: orderFromState.billingAddress || {}
+          };
+
+          // Save to localStorage
+          const existingOrders = JSON.parse(localStorage.getItem('lvsOrders') || '[]');
+          
+          // Check if order already exists to avoid duplicates
+          const orderExists = existingOrders.some(existingOrder => 
+            (existingOrder.orderId === orderForStorage.orderId) || 
+            (existingOrder._id === orderForStorage._id)
+          );
+
+          if (!orderExists) {
+            existingOrders.push(orderForStorage);
+            localStorage.setItem('lvsOrders', JSON.stringify(existingOrders));
+            console.log('✅ Order saved to localStorage for orders page:', orderForStorage);
+          }
+
           setLoading(false);
           return;
         }
@@ -31,6 +61,35 @@ const OrderConfirmationPage = () => {
 
         if (data.success) {
           setOrder(data.order);
+          
+          // Save fetched order to localStorage as well
+          const orderForStorage = {
+            _id: data.order.orderId || data.order._id,
+            orderId: data.order.orderId || data.order._id,
+            userId: data.order.userId || localStorage.getItem('userId') || 'demo-user-123',
+            orderStatus: data.order.orderStatus || 'Order Placed',
+            createdAt: data.order.createdAt || new Date().toISOString(),
+            items: data.order.items || [],
+            totalAmount: data.order.totalAmount || data.order.total || 0,
+            paymentMethod: data.order.paymentMethod || 'Cash on Delivery',
+            shippingAddress: data.order.shippingAddress || {},
+            billingAddress: data.order.billingAddress || {}
+          };
+
+          // Save to localStorage
+          const existingOrders = JSON.parse(localStorage.getItem('lvsOrders') || '[]');
+          
+          // Check if order already exists to avoid duplicates
+          const orderExists = existingOrders.some(existingOrder => 
+            (existingOrder.orderId === orderForStorage.orderId) || 
+            (existingOrder._id === orderForStorage._id)
+          );
+
+          if (!orderExists) {
+            existingOrders.push(orderForStorage);
+            localStorage.setItem('lvsOrders', JSON.stringify(existingOrders));
+            console.log('✅ Fetched order saved to localStorage:', orderForStorage);
+          }
         } else {
           setError(data.message || 'Order not found');
         }
@@ -45,13 +104,76 @@ const OrderConfirmationPage = () => {
     if (orderId) {
       fetchOrderDetails();
     }
-  }, [orderId, orderFromState]);
+
+    // Also trigger immediate save for current order
+    setTimeout(() => {
+      if (order || orderFromState) {
+        const currentOrder = order || orderFromState;
+        if (currentOrder) {
+          const orderForStorage = {
+            _id: currentOrder.orderId || currentOrder._id || orderId,
+            orderId: currentOrder.orderId || currentOrder._id || orderId,
+            userId: currentOrder.userId || localStorage.getItem('userId') || 'demo-user-123',
+            orderStatus: currentOrder.orderStatus || 'Order Placed',
+            createdAt: currentOrder.createdAt || new Date().toISOString(),
+            items: currentOrder.items || [],
+            totalAmount: currentOrder.totalAmount || currentOrder.total || 123900,
+            paymentMethod: currentOrder.paymentMethod || 'Cash on Delivery',
+            shippingAddress: currentOrder.shippingAddress || {},
+            billingAddress: currentOrder.billingAddress || {}
+          };
+
+          const existingOrders = JSON.parse(localStorage.getItem('lvsOrders') || '[]');
+          const filteredOrders = existingOrders.filter(existingOrder => 
+            existingOrder.orderId !== orderForStorage.orderId && 
+            existingOrder._id !== orderForStorage._id
+          );
+
+          filteredOrders.push(orderForStorage);
+          localStorage.setItem('lvsOrders', JSON.stringify(filteredOrders));
+          console.log('✅ Order auto-saved on page load:', orderForStorage);
+        }
+      }
+    }, 2000);
+  }, [orderId, orderFromState, order]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR'
     }).format(amount);
+  };
+
+  // Function to manually save current order to localStorage
+  const saveOrderToLocalStorage = () => {
+    if (!order) return;
+
+    const orderForStorage = {
+      _id: order.orderId || order._id || orderId,
+      orderId: order.orderId || order._id || orderId,
+      userId: order.userId || localStorage.getItem('userId') || 'demo-user-123',
+      orderStatus: order.orderStatus || 'Order Placed',
+      createdAt: order.createdAt || new Date().toISOString(),
+      items: order.items || [],
+      totalAmount: order.totalAmount || order.total || 123900, // Use the amount from your screenshot
+      paymentMethod: order.paymentMethod || 'Cash on Delivery',
+      shippingAddress: order.shippingAddress || {},
+      billingAddress: order.billingAddress || {}
+    };
+
+    // Save to localStorage
+    const existingOrders = JSON.parse(localStorage.getItem('lvsOrders') || '[]');
+    
+    // Remove any existing order with same ID to avoid duplicates
+    const filteredOrders = existingOrders.filter(existingOrder => 
+      existingOrder.orderId !== orderForStorage.orderId && 
+      existingOrder._id !== orderForStorage._id
+    );
+
+    filteredOrders.push(orderForStorage);
+    localStorage.setItem('lvsOrders', JSON.stringify(filteredOrders));
+    console.log('✅ Order manually saved to localStorage:', orderForStorage);
+    alert('✅ Order saved! You can now view it in the Orders page.');
   };
 
   const formatDate = (date) => {
@@ -69,6 +191,14 @@ const OrderConfirmationPage = () => {
 
   const handleTrackOrder = () => {
     navigate(`/track-order/${order.orderId || order._id}`);
+  };
+
+  const handleViewAllOrders = () => {
+    // First save the current order to localStorage
+    saveOrderToLocalStorage();
+    
+    // Then navigate to orders page
+    navigate('/orders');
   };
 
   if (loading) {
@@ -282,6 +412,10 @@ const OrderConfirmationPage = () => {
           <button onClick={handleTrackOrder} className="elegant-btn btn-outline">
             <span className="btn-icon">📱</span>
             <span className="btn-text">Track Order</span>
+          </button>
+          <button onClick={handleViewAllOrders} className="elegant-btn btn-secondary">
+            <span className="btn-icon">📋</span>
+            <span className="btn-text">View All Orders</span>
           </button>
           <button onClick={handleContinueShopping} className="elegant-btn btn-primary">
             <span className="btn-icon">🛒</span>

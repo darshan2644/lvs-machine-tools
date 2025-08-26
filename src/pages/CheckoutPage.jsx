@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShoppingCart } from '../hooks/useShoppingCart';
+import { processCODOrderWithEmail, sendTestEmail } from '../services/cartService';
 import './CheckoutPage.css';
 
 const CheckoutPage = () => {
@@ -358,60 +359,74 @@ const CheckoutPage = () => {
   };
 
   const processCOD = async () => {
-    console.log('Processing COD order...');
+    console.log('Processing COD order with email confirmation...');
     
     try {
-      // Prepare order data for backend API
+      // Prepare order data
       const orderData = {
-        userId: 'demo-user-123', // In real app, get from auth context
         items: cartItems.map(item => ({
           productId: item._id || item.productId,
+          name: item.name || item.title,
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
+          image: item.image || item.images?.[0] || '/images/placeholder-product.svg'
         })),
-        totalPrice: calculations.grandTotal,
-        tax: calculations.cgst + calculations.sgst,
-        paymentMethod: 'cod',
-        shippingAddress: {
-          fullName: `${customerInfo.firstName} ${customerInfo.lastName}`,
-          address: customerInfo.address,
-          city: customerInfo.city,
-          state: customerInfo.state,
-          pincode: customerInfo.pincode,
-          phone: customerInfo.phone
-        }
+        totalAmount: calculations.grandTotal
       };
 
-      console.log('Sending order data to backend:', orderData);
-
-      // Call backend API to create order
-      const response = await fetch('http://localhost:5000/api/orders/place', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
-      });
-
-      const result = await response.json();
-      console.log('Backend response:', result);
-
+      // Process COD order with email
+      const result = await processCODOrderWithEmail(orderData, customerInfo);
+      
       if (result.success) {
+        console.log('✅ COD order processed successfully with email');
+        
         // Clear cart
         clearCart();
         localStorage.removeItem('lvsCartItems');
         
-        // Navigate to order confirmation page with order data
-        navigate(`/order-confirmation/${result.order.orderId || result.orderId}`, {
-          state: { order: result.order }
+        // Navigate to order confirmation page
+        navigate(`/order-confirmation/${result.orderId}`, {
+          state: { 
+            order: result.order,
+            emailSent: result.emailSent
+          }
         });
       } else {
-        throw new Error(result.message || 'Failed to place order');
+        throw new Error(result.error || 'Failed to place order');
       }
     } catch (error) {
-      console.error('Error placing COD order:', error);
+      console.error('❌ Error placing COD order:', error);
       alert('Failed to place order. Please try again.');
       throw error;
+    }
+  };
+
+  // Test email function
+  const handleTestEmail = async () => {
+    if (!customerInfo.email) {
+      alert('Please enter your email address first');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerInfo.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      console.log('📧 Testing email to:', customerInfo.email);
+      const result = await sendTestEmail(customerInfo.email);
+      
+      if (result.success) {
+        alert('✅ Test email sent successfully! Please check your inbox.');
+      } else {
+        alert('❌ Failed to send test email: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error sending test email:', error);
+      alert('❌ Error sending test email. Please try again.');
     }
   };
 
@@ -441,6 +456,16 @@ const CheckoutPage = () => {
 
     const orderSaved = await saveOrder(orderData);
     if (orderSaved) {
+      // Dispatch order placed event for profile page updates
+      window.dispatchEvent(new CustomEvent('orderPlaced', {
+        detail: { 
+          orderId: orderId, 
+          type: 'checkout-card',
+          order: orderData 
+        }
+      }));
+      console.log('Order placed event dispatched from card checkout');
+      
       clearCart();
       navigate('/');
     } else {
@@ -675,15 +700,36 @@ const CheckoutPage = () => {
                 </div>
                 <div className="elegant-form-group">
                   <label className="form-label">Email *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={customerInfo.email}
-                    onChange={(e) => handleInputChange(e, 'customer')}
-                    placeholder="Enter email address"
-                    className="elegant-input"
-                    required
-                  />
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <input
+                      type="email"
+                      name="email"
+                      value={customerInfo.email}
+                      onChange={(e) => handleInputChange(e, 'customer')}
+                      placeholder="Enter email address"
+                      className="elegant-input"
+                      required
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleTestEmail}
+                      className="test-email-btn"
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                      title="Send a test email to verify your email address"
+                    >
+                      📧 Test
+                    </button>
+                  </div>
                 </div>
                 <div className="elegant-form-group">
                   <label className="form-label">Phone *</label>
