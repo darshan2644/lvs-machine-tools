@@ -29,11 +29,71 @@ export const AuthContextProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = (userData, token) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('token', token);
-    localStorage.setItem('userData', JSON.stringify(userData));
+  const login = async (email, password) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      setUser(data.user);
+      setIsAuthenticated(true);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.user));
+
+      return data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  };
+
+  // Signup function
+  const signup = async (name, email, password) => {
+    try {
+      // Split name into firstName and lastName
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          firstName, 
+          lastName, 
+          email, 
+          password 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Signup failed');
+      }
+
+      setUser(data.user);
+      setIsAuthenticated(true);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.user));
+
+      return data;
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
   };
 
   // Logout function
@@ -47,10 +107,12 @@ export const AuthContextProvider = ({ children }) => {
 
   // Update user profile
   const updateUser = (updatedUserData) => {
-    setUser(prevUser => ({
-      ...prevUser,
+    const updatedUser = {
+      ...user,
       ...updatedUserData
-    }));
+    };
+    setUser(updatedUser);
+    localStorage.setItem('userData', JSON.stringify(updatedUser));
   };
 
   // Context value
@@ -59,6 +121,7 @@ export const AuthContextProvider = ({ children }) => {
     isAuthenticated,
     isLoading,
     login,
+    signup,
     logout,
     updateUser
   };

@@ -153,4 +153,152 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// Get user addresses
+router.get('/addresses', async (req, res) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided'
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token'
+      });
+    }
+
+    res.json({
+      success: true,
+      addresses: user.savedAddresses || []
+    });
+  } catch (error) {
+    console.error('Get addresses error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get addresses'
+    });
+  }
+});
+
+// Save user address
+router.post('/addresses', async (req, res) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided'
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token'
+      });
+    }
+
+    const { address, city, state, pincode, country, isDefault } = req.body;
+
+    // If this is set as default, unset other defaults
+    if (isDefault) {
+      user.savedAddresses.forEach(addr => addr.isDefault = false);
+    }
+
+    // Add new address
+    user.savedAddresses.push({
+      address,
+      city,
+      state,
+      pincode,
+      country: country || 'India',
+      isDefault: isDefault || user.savedAddresses.length === 0
+    });
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Address saved successfully',
+      addresses: user.savedAddresses
+    });
+  } catch (error) {
+    console.error('Save address error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to save address'
+    });
+  }
+});
+
+// Update user profile
+router.put('/profile', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided'
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token'
+      });
+    }
+
+    const { firstName, lastName, email, phone, company, avatar } = req.body;
+
+    // Update user fields
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (email !== undefined) user.email = email;
+    if (phone !== undefined) user.phone = phone;
+    if (company !== undefined) user.company = company;
+    if (avatar !== undefined) user.avatar = avatar;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        company: user.company,
+        avatar: user.avatar,
+        role: user.role,
+        savedAddresses: user.savedAddresses
+      }
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update profile'
+    });
+  }
+});
+
 module.exports = router;

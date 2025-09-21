@@ -6,32 +6,274 @@ import './ProductsPage.css';
 
 // Sample products for fallback
 const sampleProducts = [
+  // CNC Bangle And Ring Cutting Machine Category
   {
-    _id: 'cnc-9axis',
-    name: '9 Axis CNC Universal Cutting & Engraving Auto Tool Changer Machine',
-    description: 'High-precision 9-axis CNC machine with automatic tool changing capability for universal cutting and engraving operations.',
-    price: 250000,
-    image: '/images/cnc-9axis-main.png',
-    category: 'cnc-machines',
-    categoryName: 'CNC Machines'
+    _id: 'cnc-bangle-ring-001',
+    name: 'CNC Bangle And Ring Cutting Machine Model A1',
+    description: 'Advanced CNC machine for precision bangle and ring cutting with automated operations and high accuracy.',
+    price: 185000,
+    image: '/images/cnc-bangle-main.png',
+    category: 'cnc-bangle-ring-cutting',
+    categoryName: 'CNC Bangle And Ring Cutting Machine'
   },
   {
-    _id: 'bangle-cnc-main',
-    name: 'Bangle CNC Cutting Machine',
-    description: 'Leading Manufacturer of Bangle CNC Cutting Machine with high precision cutting technology for jewelry manufacturing.',
+    _id: 'cnc-bangle-ring-002',
+    name: 'Professional CNC Bangle Ring Cutter Pro',
+    description: 'Professional grade CNC cutting machine designed for high-volume bangle and ring production.',
+    price: 220000,
+    image: '/images/bangle-cnc-1.png',
+    category: 'cnc-bangle-ring-cutting',
+    categoryName: 'CNC Bangle And Ring Cutting Machine'
+  },
+  
+  // Bangle CNC Cutting Machine Category
+  {
+    _id: 'bangle-cnc-001',
+    name: 'Bangle CNC Cutting Machine Standard',
+    description: 'Specialized CNC cutting machine designed specifically for bangle production with precision control.',
     price: 105000,
     image: '/images/bangle-cnc-main.png',
     category: 'bangle-cnc-cutting',
-    categoryName: 'Bangle CNC Cutting'
+    categoryName: 'Bangle CNC Cutting Machine'
   },
   {
-    _id: 'cnc-bangle-standard',
-    name: 'CNC Bangle Cutting Machine',
-    description: 'Professional CNC bangle cutting machine for precision jewelry manufacturing with standard model specifications.',
+    _id: 'bangle-cnc-002',
+    name: 'Advanced Bangle CNC Cutter',
+    description: 'Advanced bangle CNC cutting machine with enhanced features for professional jewelry manufacturing.',
+    price: 125000,
+    image: '/images/bangle-cnc-2.png',
+    category: 'bangle-cnc-cutting',
+    categoryName: 'Bangle CNC Cutting Machine'
+  },
+  
+  // CNC Bangle Cutting Machine Category
+  {
+    _id: 'cnc-bangle-001',
+    name: 'CNC Bangle Cutting Machine Industrial',
+    description: 'Industrial-grade CNC machine for high-volume bangle cutting operations with superior precision.',
     price: 95000,
     image: '/images/cnc-bangle-main.png',
-    category: 'bangle-cnc-cutting',
-    categoryName: 'Bangle CNC Cutting'
+    category: 'cnc-bangle-cutting-machine',
+    categoryName: 'CNC Bangle Cutting Machine'
+  },
+  {
+    _id: 'cnc-bangle-002',
+    name: 'Heavy Duty CNC Bangle Cutter',
+    description: 'Heavy duty CNC bangle cutting machine designed for continuous industrial operations.',
+    price: 135000,
+    image: '/images/cnc-bangle-1.png',
+    category: 'cnc-bangle-cutting-machine',
+    categoryName: 'CNC Bangle Cutting Machine'
+  },
+  
+  // CNC Bangle Flat And Half Round Cutting Machine Category
+  {
+    _id: 'cnc-flat-half-001',
+    name: 'CNC Bangle Flat And Half Round Cutting Machine',
+    description: 'Versatile CNC machine for both flat and half-round bangle cutting applications.',
+    price: 165000,
+    image: '/images/cnc-bangle-2.png',
+    category: 'cnc-bangle-flat-half-round',
+    categoryName: 'CNC Bangle Flat And Half Round Cutting Machine'
+  },
+  
+  // Bangle Cutting Machine Category
+  {
+    _id: 'bangle-cutting-001',
+    name: 'Semi-Automatic Bangle Cutting Machine',
+    description: 'Reliable semi-automatic bangle cutting machine for various production requirements.',
+    price: 75000,
+    image: '/images/bangle-cnc-3.png',
+    category: 'bangle-cutting-machine',
+    categoryName: 'Bangle Cutting Machine'
+  },
+  {
+    _id: 'bangle-cutting-002',
+    name: 'Manual Bangle Cutting Machine',
+    description: 'Traditional manual bangle cutting machine for precision custom work.',
+    price: 45000,
+    image: '/images/bangle-cnc-4.png',
+    category: 'bangle-cutting-machine',
+    categoryName: 'Bangle Cutting Machine'
+  },
+  
+  // Cutting Machine Category
+  {
+    _id: 'cutting-001',
+    name: 'Multi-Purpose Cutting Machine',
+    description: 'General purpose cutting machine for various industrial applications and materials.',
+    price: 85000,
+    image: '/images/cnc-9axis-main.png',
+    category: 'cutting-machine',
+    categoryName: 'Cutting Machine'
+  },
+  {
+    _id: 'cutting-002',
+    name: 'Industrial Cutting Machine Pro',
+    description: 'Professional industrial cutting machine with advanced control systems.',
+    price: 120000,
+    image: '/images/cnc-9axis-1.png',
+    category: 'cutting-machine',
+    categoryName: 'Cutting Machine'
+  },
+  
+  // HORIZONTAL WIRE FACETING MACHINE Category
+  {
+    _id: 'wire-faceting-001',
+    name: 'Horizontal Wire Faceting Machine Model H1',
+    description: 'Horizontal wire faceting machine for precision wire processing and faceting operations.',
+    price: 195000,
+    image: '/images/cnc-9axis-2.png',
+    category: 'horizontal-wire-faceting',
+    categoryName: 'HORIZONTAL WIRE FACETING MACHINE'
+  },
+  
+  // Jewellery Category
+  {
+    _id: 'jewellery-001',
+    name: 'Complete Jewelry Manufacturing System',
+    description: 'Complete jewelry manufacturing machines and equipment for professional jewelry making.',
+    price: 350000,
+    image: '/images/bangle-cnc-main.png',
+    category: 'jewellery-machines',
+    categoryName: 'Jewellery'
+  },
+  {
+    _id: 'jewellery-002',
+    name: 'Jewelry Production Line Machine',
+    description: 'Automated jewelry production line machine for high-volume manufacturing.',
+    price: 425000,
+    image: '/images/bangle-cnc-1.png',
+    category: 'jewellery-machines',
+    categoryName: 'Jewellery'
+  },
+  
+  // ATC CNC BANGLE CUTTING MACHINE Category
+  {
+    _id: 'atc-cnc-001',
+    name: 'ATC CNC Bangle Cutting Machine Auto',
+    description: 'Advanced ATC CNC bangle cutting machine with automatic tool changing capability.',
+    price: 285000,
+    image: '/images/bangle-cnc-2.png',
+    category: 'atc-cnc-bangle-cutting',
+    categoryName: 'ATC CNC BANGLE CUTTING MACHINE'
+  },
+  
+  // Faceting Machine Category
+  {
+    _id: 'faceting-001',
+    name: 'Professional Faceting Machine',
+    description: 'Professional faceting machine for precision gem cutting and jewelry making.',
+    price: 145000,
+    image: '/images/cnc-bangle-3.png',
+    category: 'faceting-machine',
+    categoryName: 'Faceting Machine'
+  },
+  {
+    _id: 'faceting-002',
+    name: 'Automated Faceting Machine',
+    description: 'Automated faceting machine with computer-controlled precision cutting.',
+    price: 210000,
+    image: '/images/cnc-bangle-4.png',
+    category: 'faceting-machine',
+    categoryName: 'Faceting Machine'
+  },
+  
+  // CNC BANGLE DOUBLE HEAD CUTTING MACHINE Category
+  {
+    _id: 'double-head-001',
+    name: 'CNC Bangle Double Head Cutting Machine',
+    description: 'Double head CNC bangle cutting machine for increased productivity and efficiency.',
+    price: 395000,
+    image: '/images/cnc-bangle-main.png',
+    category: 'cnc-bangle-double-head',
+    categoryName: 'CNC BANGLE DOUBLE HEAD CUTTING MACHINE'
+  },
+  
+  // Dough Balls Cutting Machine Category
+  {
+    _id: 'dough-balls-001',
+    name: 'Automatic Dough Balls Cutting Machine',
+    description: 'Specialized machine for cutting dough balls with precision and consistency for food processing.',
+    price: 65000,
+    image: '/images/bangle-cnc-1.png',
+    category: 'dough-balls-cutting',
+    categoryName: 'Dough Balls Cutting Machine'
+  },
+  
+  // Round Balls Automatic Faceting Cutting Machine Category
+  {
+    _id: 'round-balls-001',
+    name: 'Round Balls Automatic Faceting Cutting Machine',
+    description: 'Automatic faceting machine for round ball cutting with precision control systems.',
+    price: 175000,
+    image: '/images/bangle-cnc-2.png',
+    category: 'round-balls-faceting',
+    categoryName: 'Round Balls Automatic Faceting Cutting Machine'
+  },
+  
+  // Pendent And Ring Engraving & Cutting Machine Category
+  {
+    _id: 'pendant-ring-001',
+    name: 'Pendant And Ring Engraving & Cutting Machine',
+    description: 'Combined engraving and cutting machine for pendants and rings with detailed precision work.',
+    price: 155000,
+    image: '/images/bangle-cnc-3.png',
+    category: 'pendant-ring-engraving-cutting',
+    categoryName: 'Pendent And Ring Engraving & Cutting Machine'
+  },
+  
+  // CNC Jewellery Engraving Machine Category
+  {
+    _id: 'cnc-engraving-001',
+    name: 'CNC Jewellery Engraving Machine Pro',
+    description: 'CNC-controlled jewelry engraving machine for detailed and precise engraving work.',
+    price: 135000,
+    image: '/images/bangle-cnc-4.png',
+    category: 'cnc-jewellery-engraving',
+    categoryName: 'CNC Jewellery Engraving Machine'
+  },
+  
+  // Jewellery Engraving Machine Category
+  {
+    _id: 'engraving-001',
+    name: 'Manual Jewellery Engraving Machine',
+    description: 'Traditional jewelry engraving machine for custom and detailed manual engraving work.',
+    price: 85000,
+    image: '/images/cnc-bangle-main.png',
+    category: 'jewellery-engraving-machine',
+    categoryName: 'Jewellery Engraving Machine'
+  },
+  {
+    _id: 'engraving-002',
+    name: 'Semi-Auto Jewellery Engraving Machine',
+    description: 'Semi-automatic jewelry engraving machine with enhanced precision and control.',
+    price: 115000,
+    image: '/images/bangle-cnc-main.png',
+    category: 'jewellery-engraving-machine',
+    categoryName: 'Jewellery Engraving Machine'
+  },
+  
+  // Bangle And Ring Turning Machine Category
+  {
+    _id: 'turning-001',
+    name: 'Bangle And Ring Turning Machine',
+    description: 'Specialized turning machine for bangle and ring finishing operations with precision control.',
+    price: 125000,
+    image: '/images/cnc-bangle-1.png',
+    category: 'bangle-ring-turning',
+    categoryName: 'Bangle And Ring Turning Machine'
+  },
+  
+  // Bangle Turning & Finishing Machine Category
+  {
+    _id: 'finishing-001',
+    name: 'Bangle Turning & Finishing Machine Complete',
+    description: 'Complete turning and finishing machine for bangle surface preparation and polishing operations.',
+    price: 145000,
+    image: '/images/cnc-bangle-2.png',
+    category: 'bangle-turning-finishing',
+    categoryName: 'Bangle Turning & Finishing Machine'
   }
 ];
 

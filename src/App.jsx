@@ -1,13 +1,16 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthContextProvider } from './context/AuthContext';
+import ToastProvider from './components/ToastProvider';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import ProfilePage from './pages/ProfilePage';
+import ProfilePageNew from './pages/ProfilePageNew';
 import CategoriesPage from './pages/CategoriesPage';
+import CategoriesPageNew from './pages/CategoriesPage-new';
 import ProductsPage from './pages/ProductsPage';
+import ProductsPageNew from './pages/ProductsPageNew';
 import ProductDetailPage from './pages/ProductDetailPage';
 import CNC9AxisPage from './pages/CNC9AxisPage';
 import BangleCNCPage from './pages/BangleCNCPage';
@@ -17,11 +20,10 @@ import CNCBangleMR5Page from './pages/CNCBangleMR5Page';
 import BangleCuttingSemiAutoPage from './pages/BangleCuttingSemiAutoPage';
 import CNCBangleCategoryPage from './pages/CNCBangleCategoryPage';
 import CartPage from './pages/CartPage';
+import CheckoutPageNew from './pages/CheckoutPageNew';
 import CheckoutPageEnhanced from './pages/CheckoutPage-enhanced';
 import OrderConfirmationPageEnhanced from './pages/OrderConfirmationPage-enhanced';
-import OrdersPage from './pages/OrdersPage';
-import LoginPageEnhanced from './pages/LoginPage-enhanced';
-import SignupPageEnhanced from './pages/SignupPage-enhanced';
+import OrdersPageNew from './pages/OrdersPageNew';
 import OrderTrackingPage from './pages/OrderTrackingPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
@@ -33,14 +35,17 @@ import './App.css';
 function App() {
   return (
     <AuthContextProvider>
-      <Router>
-        <div className="app">
-          <Navbar />
-          <main className="main-content" style={{ paddingTop: '80px' }}>
+      <ToastProvider>
+        <Router>
+          <div className="app">
+            <Navbar />
+            <main className="main-content" style={{ paddingTop: '80px' }}>
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/categories" element={<CategoriesPageNew />} />
+              <Route path="/categories-old" element={<CategoriesPage />} />
+              <Route path="/products" element={<ProductsPageNew />} />
+              <Route path="/products-old" element={<ProductsPage />} />
               <Route path="/product/:id" element={<ProductDetailPage />} />
               <Route path="/cnc-9axis-machine" element={<CNC9AxisPage />} />
               <Route path="/bangle-cnc-cutting-machine" element={<BangleCNCPage />} />
@@ -50,24 +55,26 @@ function App() {
               <Route path="/bangle-cutting-semi-auto" element={<BangleCuttingSemiAutoPage />} />
               <Route path="/cnc-bangle-category" element={<CNCBangleCategoryPage />} />
               <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPageEnhanced />} />
+              <Route path="/checkout" element={<CheckoutPageNew />} />
+              <Route path="/checkout-old" element={<CheckoutPageEnhanced />} />
               <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPageEnhanced />} />
-              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/orders" element={<OrdersPageNew />} />
               <Route path="/track-order/:orderId" element={<OrderTrackingPage />} />
               <Route path="/order-tracking/:orderId" element={<OrderTrackingPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/quality" element={<QualityPage />} />
               <Route path="/inquiry" element={<InquiryPage />} />
-              <Route path="/login" element={<LoginPageEnhanced />} />
-              <Route path="/signup" element={<SignupPageEnhanced />} />
-              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/profile" element={<ProfilePageNew />} />
               {/* Add more routes here later */}
             </Routes>
           </main>
           <Footer />
         </div>
       </Router>
+      </ToastProvider>
     </AuthContextProvider>
   );
 }

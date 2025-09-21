@@ -1,0 +1,339 @@
+/* UPI Payment Modal */
+.upi-payment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.upi-payment-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.upi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.upi-header h3 {
+  margin: 0;
+  color: #000;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+.close-btn:hover {
+  background: #f0f0f0;
+}
+
+/* Payment Instructions */
+.payment-instructions {
+  padding: 20px;
+}
+
+.payment-details {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.payment-details h4 {
+  margin: 0 0 12px 0;
+  color: #000;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+  font-weight: 600;
+  color: #000;
+}
+
+.detail-row span:first-child {
+  color: #666;
+}
+
+.detail-row span:last-child {
+  color: #000;
+  font-weight: 500;
+}
+
+/* Payment Options */
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-pay-now,
+.btn-qr-code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  color: #000;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-pay-now:hover,
+.btn-qr-code:hover {
+  border-color: #000;
+  background: #f8f9fa;
+}
+
+.btn-pay-now {
+  background: #FF9500;
+  color: white;
+  border-color: #FF9500;
+}
+
+.btn-pay-now:hover {
+  background: #e6850e;
+  border-color: #e6850e;
+}
+
+.divider {
+  text-align: center;
+  color: #666;
+  font-size: 12px;
+  position: relative;
+  margin: 8px 0;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e0e0e0;
+  z-index: 1;
+}
+
+.divider::after {
+  content: 'OR';
+  background: white;
+  padding: 0 12px;
+  position: relative;
+  z-index: 2;
+}
+
+/* QR Code Section */
+.qr-code-section {
+  padding: 20px;
+  text-align: center;
+}
+
+.qr-code-section h4 {
+  margin: 0 0 20px 0;
+  color: #000;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.qr-code {
+  width: 200px;
+  height: 200px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.qr-instructions {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.btn-paid {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-paid:hover {
+  background: #218838;
+}
+
+/* Payment Confirmation */
+.payment-confirmation {
+  padding: 20px;
+  text-align: center;
+}
+
+.success-icon {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 auto 16px auto;
+}
+
+.payment-confirmation h4 {
+  margin: 0 0 8px 0;
+  color: #000;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.payment-confirmation p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.transaction-input {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.transaction-input label {
+  display: block;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.transaction-input input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.transaction-input input:focus {
+  outline: none;
+  border-color: #000;
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-confirm,
+.btn-cancel {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-confirm {
+  background: #000;
+  color: white;
+}
+
+.btn-confirm:hover {
+  background: #333;
+}
+
+.btn-cancel {
+  background: #f8f9fa;
+  color: #666;
+  border: 2px solid #e0e0e0;
+}
+
+.btn-cancel:hover {
+  background: #e9ecef;
+  border-color: #ccc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .upi-payment-content {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .upi-header,
+  .payment-instructions,
+  .qr-code-section,
+  .payment-confirmation {
+    padding: 16px;
+  }
+  
+  .qr-code {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .confirmation-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-confirm,
+  .btn-cancel {
+    width: 100%;
+  }
+}

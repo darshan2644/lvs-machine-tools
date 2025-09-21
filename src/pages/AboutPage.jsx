@@ -2,97 +2,155 @@ import React from 'react';
 import './AboutPage.css';
 
 const AboutPage = () => {
+  const whyChooseUsFeatures = [
+    {
+      id: 1,
+      number: "01",
+      title: "Advanced Manufacturing Unit",
+      description: "Constant efforts to improve our product line using state-of-the-art technology."
+    },
+    {
+      id: 2,
+      number: "02",
+      title: "Customized Solutions",
+      description: "Tailoring our machinery to meet the specific, unique requirements of each client."
+    },
+    {
+      id: 3,
+      number: "03",
+      title: "Timely Delivery & Support",
+      description: "Ensuring total client satisfaction with on-time delivery and dedicated after-sales support."
+    },
+    {
+      id: 4,
+      number: "04",
+      title: "Moral & Ethical Dealings",
+      description: "Operating with complete transparency and adhering to moral business practices."
+    }
+  ];
+
+  const coreValues = [
+    "Ethics",
+    "Innovation (R&D)",
+    "Delighted Customer",
+    "Time Discipline",
+    "Respect for All",
+    "Training and Development of All Staff"
+  ];
+
   return (
     <div className="about-page">
-      <section className="about-hero">
-        <div className="container">
-          <h1 className="hero-title">
-            About <span className="text-yellow">LVS Machine and Tools</span>
-          </h1>
-          <p className="hero-description">
-            Your trusted partner for professional machine tools and industrial equipment
-          </p>
-        </div>
-      </section>
-
-      <section className="about-content">
-        <div className="container">
-          <div className="content-grid">
-            <div className="content-section">
-              <h2>Our Story</h2>
-              <p>
-                LVS Machine and Tools has been at the forefront of industrial machinery innovation for over 25 years. 
-                We specialize in providing high-quality CNC machines, cutting equipment, and precision tools to 
-                manufacturers, fabricators, and craftsmen worldwide.
+      <div className="about-container">
+        {/* Main Introduction Section */}
+        <section className="intro-section">
+          <div className="intro-content">
+            <div className="intro-text">
+              <h1 className="intro-headline">World-Class Industrial Infrastructure.</h1>
+              <p className="intro-tagline">Innovating the Future of Precision Machinery.</p>
+              <p className="intro-description">
+                LVS Machine Tools is a world-class infrastructural facility, fully-fledged with modern machinery and equipment. 
+                We have the caliber to innovate new techniques of fabricating sophisticated Bangles & Rings, Pendants, and Round Ball Making Machines. 
+                Our team of quality experts examines the efficiency and performance of all Jewellery CNC Bangle Faceting machines and Jewellery SPM Machineries.
               </p>
             </div>
-
-            <div className="content-section">
-              <h2>Our Mission</h2>
-              <p>
-                To deliver cutting-edge machine tools and equipment that enhance productivity, precision, and 
-                profitability for our customers. We are committed to providing exceptional service and support 
-                throughout the entire customer journey.
-              </p>
+            <div className="intro-image">
+              <div className="facility-image-placeholder">
+                <svg width="400" height="300" viewBox="0 0 400 300" fill="none">
+                  <rect width="400" height="300" fill="#f8fafc" rx="12"/>
+                  <rect x="50" y="50" width="300" height="200" fill="#e2e8f0" rx="8"/>
+                  <circle cx="200" cy="120" r="30" fill="#718096"/>
+                  <rect x="170" y="140" width="60" height="40" fill="#718096" rx="4"/>
+                  <rect x="150" y="190" width="100" height="20" fill="#2d3748" rx="2"/>
+                  <text x="200" y="240" textAnchor="middle" fill="#718096" fontSize="14">LVS Manufacturing Facility</text>
+                </svg>
+              </div>
             </div>
+          </div>
+        </section>
 
-            <div className="content-section">
-              <h2>Why Choose Us</h2>
-              <ul>
-                <li>25+ years of industry experience</li>
-                <li>High-quality, reliable equipment</li>
-                <li>Expert technical support</li>
-                <li>Competitive pricing</li>
-                <li>Fast shipping and delivery</li>
-                <li>Custom solutions available</li>
-              </ul>
+        {/* Why Choose Us Section */}
+        <section className="why-choose-section">
+          <div className="section-header">
+            <h2 className="section-title">Why Choose Us?</h2>
+          </div>
+          
+          <div className="features-grid">
+            {whyChooseUsFeatures.map(feature => (
+              <div key={feature.id} className="feature-card">
+                <div className="feature-number">{feature.number}</div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Core Values Section */}
+        <section className="core-values-section">
+          <div className="values-content">
+            <div className="values-text">
+              <h2 className="values-headline">Our Core Values</h2>
             </div>
-
-            <div className="content-section">
-              <h2>Our Expertise</h2>
-              <p>
-                We specialize in jewelry manufacturing equipment, including CNC bangle cutting machines, 
-                faceting machines, engraving equipment, and precision cutting tools. Our team of experts 
-                ensures that every machine meets the highest standards of quality and performance.
-              </p>
-            </div>
-
-            <div className="content-section location-section">
-              <h2>Visit Our Location</h2>
-              <p>
-                Located in the heart of Gujarat's industrial hub, our facility houses state-of-the-art 
-                machinery and serves customers across India and internationally. Come visit us to see 
-                our equipment in action and discuss your specific requirements with our expert team.
-              </p>
-              
-              <div className="location-details">
-                <div className="address-info">
-                  <h3>📍 LVS Machine Tools</h3>
-                  <p>
-                    <strong>Address:</strong> Gujarat, India<br/>
-                    <strong>Business Hours:</strong> Monday - Saturday, 9:00 AM - 6:00 PM<br/>
-                    <strong>Contact:</strong> +91-XXXXXXXXXX<br/>
-                    <strong>Email:</strong> info@lvsmachinetools.com
-                  </p>
+            <div className="values-list">
+              {coreValues.map((value, index) => (
+                <div key={index} className="value-item">
+                  <div className="value-icon">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                  <span className="value-text">{value}</span>
                 </div>
-                
-                <div className="map-container">
-                  <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3687.156955891533!2d70.04875390947609!3d22.460735379486234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39576b9045344c93%3A0xbe4d9d3db617f596!2sLVS%20Machine%20Tools!5e0!3m2!1sen!2sin!4v1756185682816!5m2!1sen!2sin" 
-                    width="100%" 
-                    height="400" 
-                    style={{border: 0, borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)'}} 
-                    allowFullScreen="" 
-                    loading="lazy" 
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="LVS Machine Tools Location"
-                  ></iframe>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Engineering Objective Section */}
+        <section className="engineering-section">
+          <div className="engineering-content">
+            <div className="engineering-image">
+              <div className="cnc-image-placeholder">
+                <svg width="400" height="300" viewBox="0 0 400 300" fill="none">
+                  <rect width="400" height="300" fill="#f8fafc" rx="12"/>
+                  <rect x="30" y="40" width="340" height="220" fill="#e2e8f0" rx="8"/>
+                  <rect x="60" y="80" width="280" height="140" fill="#cbd5e0" rx="6"/>
+                  <circle cx="200" cy="130" r="40" fill="#4a5568"/>
+                  <rect x="180" y="150" width="40" height="30" fill="#2d3748" rx="2"/>
+                  <rect x="100" y="200" width="200" height="10" fill="#718096" rx="1"/>
+                  <text x="200" y="280" textAnchor="middle" fill="#718096" fontSize="14">CNC Machine in Operation</text>
+                </svg>
+              </div>
+            </div>
+            <div className="engineering-text">
+              <h2 className="engineering-headline">Efficiency Through Automation.</h2>
+              <p className="engineering-description">
+                Our CNC machines are designed to dramatically increase efficiency. They enhance <strong>Speed</strong> by consolidating multiple steps, 
+                provide <strong>Cost Savings</strong> by optimizing raw material usage, offer <strong>Flexibility</strong> with easily recalled programs, 
+                and enable full <strong>Automation</strong> for continuous, unmanned operation.
+              </p>
+              <div className="engineering-benefits">
+                <div className="benefit-item">
+                  <span className="benefit-label">Speed</span>
+                  <span className="benefit-description">Consolidating multiple manufacturing steps</span>
+                </div>
+                <div className="benefit-item">
+                  <span className="benefit-label">Cost Savings</span>
+                  <span className="benefit-description">Optimizing raw material usage</span>
+                </div>
+                <div className="benefit-item">
+                  <span className="benefit-label">Flexibility</span>
+                  <span className="benefit-description">Easily recalled programs</span>
+                </div>
+                <div className="benefit-item">
+                  <span className="benefit-label">Automation</span>
+                  <span className="benefit-description">Continuous, unmanned operation</span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 };

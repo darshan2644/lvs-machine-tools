@@ -39,7 +39,28 @@ const userSchema = new mongoose.Schema({
   profileImage: {
     type: String,
     default: null
-  }
+  },
+  phone: {
+    type: String,
+    default: null
+  },
+  company: {
+    type: String,
+    default: null
+  },
+  avatar: {
+    type: String,
+    default: '👤'
+  },
+  savedAddresses: [{
+    address: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    pincode: { type: String, required: true },
+    country: { type: String, default: 'India' },
+    isDefault: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+  }]
 }, {
   timestamps: true
 });

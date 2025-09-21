@@ -24,8 +24,13 @@ const CartPage = () => {
         console.log('Cart API response:', response.data);
         
         if (response.data.success) {
-          setCartItems(response.data.items || []);
-          console.log('Cart items loaded:', response.data.items);
+          // Filter out items with null productId to prevent errors
+          const validItems = (response.data.items || []).filter(item => item.productId);
+          setCartItems(validItems);
+          console.log('Cart items loaded:', validItems);
+          if (validItems.length !== (response.data.items || []).length) {
+            console.warn('Some cart items had null productId and were filtered out');
+          }
         } else {
           console.error('API returned success=false:', response.data);
           setError('Failed to load cart items');
@@ -51,11 +56,11 @@ const CartPage = () => {
 
       if (response.data.success) {
         if (newQuantity <= 0) {
-          setCartItems(items => items.filter(item => item.productId._id !== productId));
+          setCartItems(items => items.filter(item => item.productId?._id !== productId));
         } else {
           setCartItems(items => 
             items.map(item => 
-              item.productId._id === productId 
+              item.productId?._id === productId 
                 ? { ...item, quantity: newQuantity }
                 : item
             )
@@ -76,7 +81,7 @@ const CartPage = () => {
       });
 
       if (response.data.success) {
-        setCartItems(items => items.filter(item => item.productId._id !== productId));
+        setCartItems(items => items.filter(item => item.productId?._id !== productId));
       }
     } catch (error) {
       console.error('Error removing item:', error);
@@ -152,15 +157,42 @@ const CartPage = () => {
 
         {cartItems.length === 0 ? (
           <div className="empty-cart">
-            <div className="empty-cart-icon">🛒</div>
-            <h2>Your cart is empty</h2>
-            <p>Add some products to your cart to get started</p>
-            <button 
-              className="btn btn-primary" 
-              onClick={() => navigate('/products')}
-            >
-              Continue Shopping
-            </button>
+            <div className="empty-cart-illustration">
+              <div className="cart-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="m1 1 4 4 4.68 11H19l3-7H6"></path>
+                </svg>
+              </div>
+              <div className="empty-lines">
+                <div className="line line-1"></div>
+                <div className="line line-2"></div>
+                <div className="line line-3"></div>
+              </div>
+            </div>
+            <div className="empty-cart-content">
+              <h2>Your cart is empty</h2>
+              <p>Add some products to your cart to get started</p>
+              <div className="empty-cart-actions">
+                <button 
+                  className="continue-shopping-btn" 
+                  onClick={() => navigate('/categories')}
+                >
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 1v6M16 1v6"/>
+                  </svg>
+                  Continue Shopping
+                </button>
+                <button 
+                  className="browse-categories-btn" 
+                  onClick={() => navigate('/categories')}
+                >
+                  Browse Categories
+                </button>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="cart-content">
@@ -169,38 +201,38 @@ const CartPage = () => {
                 <div key={item._id} className="cart-item">
                   <div className="item-image">
                     <img 
-                      src={item.productId.images?.[0] || '/images/placeholder-product.svg'} 
-                      alt={item.productId.name}
+                      src={item.productId?.images?.[0] || '/images/placeholder-product.svg'} 
+                      alt={item.productId?.name || 'Product'}
                     />
                   </div>
                   
                   <div className="item-details">
-                    <h3>{item.productId.name}</h3>
-                    <p className="item-brand">{item.productId.brand}</p>
-                    <p className="item-price">₹{item.price.toLocaleString()}</p>
+                    <h3>{item.productId?.name || 'Product Name'}</h3>
+                    <p className="item-brand">{item.productId?.brand || 'LVS Machine Tools'}</p>
+                    <p className="item-price">₹{(item.price || 0).toLocaleString()}</p>
                   </div>
 
                   <div className="item-quantity">
                     <button 
                       className="qty-btn"
-                      onClick={() => updateQuantity(item.productId._id, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.productId?._id, item.quantity - 1)}
                     >
                       -
                     </button>
                     <span className="qty-value">{item.quantity}</span>
                     <button 
                       className="qty-btn"
-                      onClick={() => updateQuantity(item.productId._id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.productId?._id, item.quantity + 1)}
                     >
                       +
                     </button>
                   </div>
 
                   <div className="item-total">
-                    <p>₹{(item.price * item.quantity).toLocaleString()}</p>
+                    <p>₹{((item.price || 0) * item.quantity).toLocaleString()}</p>
                     <button 
                       className="remove-btn"
-                      onClick={() => removeItem(item.productId._id)}
+                      onClick={() => removeItem(item.productId?._id)}
                     >
                       Remove
                     </button>

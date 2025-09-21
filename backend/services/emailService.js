@@ -1,4 +1,6 @@
 const nodemailer = require('nodemailer');
+const PDFReceiptGenerator = require('./pdfGenerator');
+const fs = require('fs');
 
 // Email configuration
 const createTransporter = () => {
@@ -118,6 +120,7 @@ const generateOrderConfirmationHTML = (orderData) => {
               <li>You'll receive a shipping confirmation with tracking details</li>
               <li>Your order will be carefully packed and dispatched</li>
               <li>Track your order status in your account dashboard</li>
+              <li><strong>📎 Your PDF receipt is attached to this email for your records</strong></li>
             </ul>
           </div>
 
@@ -148,6 +151,10 @@ const sendOrderConfirmationEmail = async (orderData) => {
   try {
     const transporter = createTransporter();
     
+    // Generate PDF receipt
+    const pdfGenerator = new PDFReceiptGenerator();
+    const pdfPath = await pdfGenerator.generateReceipt(orderData);
+    
     const mailOptions = {
       from: {
         name: 'LVS Machine Tools',
@@ -156,6 +163,12 @@ const sendOrderConfirmationEmail = async (orderData) => {
       to: orderData.customerEmail,
       subject: `🎉 Order Confirmation - ${orderData.orderId} | LVS Machine Tools`,
       html: generateOrderConfirmationHTML(orderData),
+      attachments: [
+        {
+          filename: `Receipt_${orderData.orderId}.pdf`,
+          path: pdfPath
+        }
+      ],
       // Also send plain text version
       text: `
 Order Confirmation - LVS Machine Tools
@@ -180,6 +193,8 @@ ${orderData.shippingAddress.city}, ${orderData.shippingAddress.state} - ${orderD
 
 We'll process your order within 1-2 business days and send you tracking information.
 
+Please find your receipt attached as a PDF for your records.
+
 Thank you for choosing LVS Machine Tools!
 
 Best regards,
@@ -188,7 +203,11 @@ LVS Machine Tools Team
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('✅ Order confirmation email sent successfully:', result.messageId);
+    
+    // Clean up temporary PDF file
+    cleanupTempFile(pdfPath);
+    
+    console.log('✅ Order confirmation email with PDF receipt sent successfully:', result.messageId);
     return { success: true, messageId: result.messageId };
     
   } catch (error) {
@@ -391,6 +410,18 @@ const sendTestEmail = async (toEmail) => {
   } catch (error) {
     console.error('Test email error:', error);
     return { success: false, error: error.message };
+  }
+};
+
+// Clean up temporary PDF files
+const cleanupTempFile = (filePath) => {
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log('🗑️ Temporary PDF file cleaned up:', filePath);
+    }
+  } catch (error) {
+    console.error('❌ Error cleaning up temporary file:', error);
   }
 };
 

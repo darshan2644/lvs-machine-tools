@@ -304,7 +304,8 @@
   font-weight: 500;
 }
 
-/* Categories Section */
+/* Categories Section - DISABLED (Using CategoriesSection component instead) */
+/*
 .categories {
   background: linear-gradient(135deg, var(--primary-white) 0%, var(--off-white) 100%);
   border-top: 2px solid rgba(255, 215, 0, 0.2);
@@ -337,7 +338,9 @@
   margin-left: auto;
   margin-right: auto;
 }
+*/
 
+/* 
 .category-card {
   text-align: center;
   transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
@@ -398,7 +401,9 @@
   transform: translateY(-8px);
   box-shadow: 0 16px 48px rgba(255, 215, 0, 0.3);
 }
+*/
 
+/*
 .category-content {
   flex: 1;
   display: flex;
@@ -495,6 +500,7 @@
   padding: 0.2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+*/
 
 .machine-icon-special .icon-large {
   opacity: 0.8;
