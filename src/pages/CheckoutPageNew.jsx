@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/ToastProvider';
 import './CheckoutPageNew.css';
 
 const CheckoutPageNew = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { showSuccess, showError } = useToast();
   
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [isBuyNow, setIsBuyNow] = useState(false);
   
   // Address management
   const [savedAddresses, setSavedAddresses] = useState([]);
@@ -53,10 +55,19 @@ const CheckoutPageNew = () => {
     checkRazorpay();
   }, []);
   
-  // Load cart items
+  // Load cart items or buy now item
   useEffect(() => {
     const loadCartItems = async () => {
       try {
+        // Check if this is a Buy Now flow
+        if (location.state?.buyNowItem) {
+          setCartItems([location.state.buyNowItem]);
+          setIsBuyNow(true);
+          setLoading(false);
+          return;
+        }
+
+        // Regular cart flow
         const userId = localStorage.getItem('userId') || 'demo-user-123';
         const response = await fetch(`http://localhost:5000/api/cart/${userId}`);
         const data = await response.json();
@@ -73,7 +84,7 @@ const CheckoutPageNew = () => {
     };
     
     loadCartItems();
-  }, [showError]);
+  }, [showError, location.state]);
   
   // Load user data and saved addresses
   useEffect(() => {
@@ -497,7 +508,12 @@ const CheckoutPageNew = () => {
     <div className="checkout-page">
       <div className="checkout-container">
         <div className="checkout-header">
-          <h1>Checkout</h1>
+          <h1>{isBuyNow ? 'Buy Now - Quick Checkout' : 'Checkout'}</h1>
+          {isBuyNow && (
+            <div className="buy-now-badge">
+              <span>⚡ Express Checkout</span>
+            </div>
+          )}
           <div className="checkout-steps">
             <div className="step active">
               <span className="step-number">1</span>

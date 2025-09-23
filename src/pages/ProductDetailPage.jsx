@@ -12,6 +12,10 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(4.5);
 
   // Function to handle add to cart
   const handleAddToCart = async () => {
@@ -30,7 +34,7 @@ const ProductDetailPage = () => {
     }
   };
 
-  // Function to handle buy now - Enhanced version
+  // Function to handle buy now - Direct to checkout
   const handleBuyNow = async () => {
     if (!product) return;
     
@@ -53,12 +57,19 @@ const ProductDetailPage = () => {
     
     console.log('Buy Now clicked for:', product.name, 'Quantity:', quantity);
     
-    // Navigate to enhanced checkout page with buy now item
+    // Navigate to checkout page with buy now item
     navigate('/checkout', {
       state: {
-        buyNowItem: buyNowItem
+        buyNowItem: buyNowItem,
+        isBuyNow: true
       }
     });
+  };
+
+  // Handle wishlist toggle
+  const handleWishlistToggle = () => {
+    setIsInWishlist(!isInWishlist);
+    // Here you can add API call to save/remove from wishlist
   };
 
   const fetchProductDetails = useCallback(async () => {
@@ -203,6 +214,22 @@ const ProductDetailPage = () => {
               <div className="product-header">
                 <span className="product-category-tag">{product.categoryName}</span>
                 <h1 className="product-name">{product.name}</h1>
+                
+                {/* Rating and Reviews */}
+                <div className="rating-section">
+                  <div className="stars">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span 
+                        key={star} 
+                        className={star <= averageRating ? 'star filled' : 'star'}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <span className="rating-text">({averageRating}) • 127 reviews</span>
+                </div>
+                
                 <p className="product-description">{product.description}</p>
               </div>
 
@@ -219,6 +246,14 @@ const ProductDetailPage = () => {
                   {product.price && (
                     <span className="discount-badge">Save 13%</span>
                   )}
+                </div>
+                <div className="price-details">
+                  <p className="delivery-info">
+                    <strong>Free delivery</strong> on orders above ₹50,000
+                  </p>
+                  <p className="stock-status">
+                    ✅ <span className="in-stock">In stock</span> - Order today
+                  </p>
                 </div>
               </div>
 
@@ -256,6 +291,16 @@ const ProductDetailPage = () => {
                   </svg>
                   Add to Cart
                 </button>
+                <button 
+                  className={`btn-wishlist ${isInWishlist ? 'active' : ''}`}
+                  onClick={handleWishlistToggle}
+                  title="Add to Wishlist"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill={isInWishlist ? "currentColor" : "none"}/>
+                  </svg>
+                  {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
+                </button>
               </div>
 
               <div className="product-features">
@@ -280,7 +325,209 @@ const ProductDetailPage = () => {
                     <span>24/7 technical assistance</span>
                   </div>
                 </div>
+                <div className="feature-item">
+                  <div className="feature-icon">🔄</div>
+                  <div className="feature-text">
+                    <strong>Easy Returns</strong>
+                    <span>30-day return policy</span>
+                  </div>
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Product Details Tabs */}
+      <section className="product-tabs-section">
+        <div className="container">
+          <div className="tabs-container animate-fade-in">
+            <div className="tabs-header">
+              <button 
+                className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
+                onClick={() => setActiveTab('overview')}
+              >
+                Overview
+              </button>
+              <button 
+                className={`tab-btn ${activeTab === 'specifications' ? 'active' : ''}`}
+                onClick={() => setActiveTab('specifications')}
+              >
+                Specifications
+              </button>
+              <button 
+                className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
+                onClick={() => setActiveTab('reviews')}
+              >
+                Reviews ({reviews.length || 127})
+              </button>
+              <button 
+                className={`tab-btn ${activeTab === 'shipping' ? 'active' : ''}`}
+                onClick={() => setActiveTab('shipping')}
+              >
+                Shipping & Returns
+              </button>
+            </div>
+
+            <div className="tabs-content">
+              {activeTab === 'overview' && (
+                <div className="tab-panel">
+                  <h3>Product Overview</h3>
+                  <p>{product.description}</p>
+                  <div className="overview-highlights">
+                    <h4>Key Highlights:</h4>
+                    <ul>
+                      <li>✅ Professional-grade industrial machine</li>
+                      <li>✅ High precision and reliability</li>
+                      <li>✅ Advanced control systems</li>
+                      <li>✅ Comprehensive warranty coverage</li>
+                      <li>✅ Expert technical support included</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'specifications' && (
+                <div className="tab-panel">
+                  <h3>Technical Specifications</h3>
+                  {product.specifications ? (
+                    <div className="specs-grid">
+                      <div className="spec-item">
+                        <strong>Control System:</strong>
+                        <span>{product.specifications.control}</span>
+                      </div>
+                      <div className="spec-item">
+                        <strong>Axes Configuration:</strong>
+                        <span>{product.specifications.axes}</span>
+                      </div>
+                      {product.specifications.features && (
+                        <div className="spec-item">
+                          <strong>Key Features:</strong>
+                          <ul>
+                            {product.specifications.features.map((feature, index) => (
+                              <li key={index}>{feature}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {product.specifications.applications && (
+                        <div className="spec-item">
+                          <strong>Applications:</strong>
+                          <ul>
+                            {product.specifications.applications.map((app, index) => (
+                              <li key={index}>{app}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="default-specs">
+                      <div className="spec-item">
+                        <strong>Build Quality:</strong>
+                        <span>Industrial-grade construction with premium materials</span>
+                      </div>
+                      <div className="spec-item">
+                        <strong>Precision:</strong>
+                        <span>High-precision manufacturing for superior accuracy</span>
+                      </div>
+                      <div className="spec-item">
+                        <strong>Reliability:</strong>
+                        <span>Engineered for continuous operation and long-lasting performance</span>
+                      </div>
+                      <div className="spec-item">
+                        <strong>Support:</strong>
+                        <span>Comprehensive technical support and training included</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'reviews' && (
+                <div className="tab-panel">
+                  <h3>Customer Reviews</h3>
+                  <div className="reviews-summary">
+                    <div className="rating-overview">
+                      <div className="avg-rating">
+                        <span className="rating-number">{averageRating}</span>
+                        <div className="stars">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <span 
+                              key={star} 
+                              className={star <= averageRating ? 'star filled' : 'star'}
+                            >
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                        <span>Based on 127 reviews</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="sample-reviews">
+                    <div className="review-item">
+                      <div className="review-header">
+                        <strong>Rajesh Kumar</strong>
+                        <div className="review-rating">
+                          ★★★★★
+                        </div>
+                      </div>
+                      <p>"Excellent machine quality and performance. Very satisfied with the purchase."</p>
+                      <small>Verified Purchase • 2 months ago</small>
+                    </div>
+                    
+                    <div className="review-item">
+                      <div className="review-header">
+                        <strong>Priya Shah</strong>
+                        <div className="review-rating">
+                          ★★★★☆
+                        </div>
+                      </div>
+                      <p>"Good build quality and reliable performance. Technical support is very helpful."</p>
+                      <small>Verified Purchase • 1 month ago</small>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'shipping' && (
+                <div className="tab-panel">
+                  <h3>Shipping & Returns</h3>
+                  <div className="shipping-info">
+                    <div className="info-section">
+                      <h4>🚚 Shipping Information</h4>
+                      <ul>
+                        <li>Free shipping on orders above ₹50,000</li>
+                        <li>Standard delivery: 7-14 business days</li>
+                        <li>Express delivery available for urgent orders</li>
+                        <li>Professional installation service available</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="info-section">
+                      <h4>🔄 Return Policy</h4>
+                      <ul>
+                        <li>30-day return policy for all products</li>
+                        <li>Product must be in original condition</li>
+                        <li>Return shipping costs may apply</li>
+                        <li>Refund processed within 7-10 business days</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="info-section">
+                      <h4>🛡️ Warranty</h4>
+                      <ul>
+                        <li>2-year comprehensive warranty</li>
+                        <li>Covers manufacturing defects</li>
+                        <li>Free technical support</li>
+                        <li>On-site service available</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -290,7 +537,7 @@ const ProductDetailPage = () => {
       <section className="specifications-section">
         <div className="container">
           <div className="specs-container animate-fade-in">
-            <h2 className="section-title">Technical Specifications</h2>
+            <h2 className="section-title">Quick Specifications</h2>
             
             {product.specifications ? (
               <div className="specs-grid">

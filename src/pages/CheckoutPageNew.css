@@ -15,6 +15,7 @@
 .checkout-header {
   text-align: center;
   margin-bottom: 3rem;
+  position: relative;
 }
 
 .checkout-header h1 {
@@ -22,6 +23,26 @@
   font-weight: 700;
   color: #000;
   margin-bottom: 2rem;
+}
+
+/* Buy Now Badge */
+.buy-now-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: linear-gradient(135deg, #ff9900, #ffad33);
+  color: #000;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 153, 0, 0.3);
+}
+
+.buy-now-badge span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .checkout-steps {
