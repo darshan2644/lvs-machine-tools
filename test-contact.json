@@ -1,0 +1,9 @@
+{
+  "firstName": "Test",
+  "lastName": "User", 
+  "email": "test@example.com",
+  "phone": "+91 9999999999",
+  "company": "Test Company",
+  "subject": "product-inquiry",
+  "message": "This is a test contact form submission to verify the functionality is working correctly."
+}

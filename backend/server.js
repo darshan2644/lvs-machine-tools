@@ -16,6 +16,7 @@ const orderRoutes = require('./routes/orders');
 const cartRoutes = require('./routes/cart');
 const emailRoutes = require('./routes/email');
 const paymentRoutes = require('./routes/payment');
+const wishlistRoutes = require('./routes/wishlist');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +32,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 // MongoDB connection
 const connectDB = async () => {

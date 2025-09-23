@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const PDFReceiptGenerator = require('./pdfGenerator');
+const LVSReceiptGenerator = require('./lvsReceiptGenerator');
 const fs = require('fs');
 
 // Email configuration
@@ -120,7 +120,7 @@ const generateOrderConfirmationHTML = (orderData) => {
               <li>You'll receive a shipping confirmation with tracking details</li>
               <li>Your order will be carefully packed and dispatched</li>
               <li>Track your order status in your account dashboard</li>
-              <li><strong>📎 Your PDF receipt is attached to this email for your records</strong></li>
+              <li><strong>📎 Your professional LVS receipt is attached to this email for your records</strong></li>
             </ul>
           </div>
 
@@ -151,8 +151,8 @@ const sendOrderConfirmationEmail = async (orderData) => {
   try {
     const transporter = createTransporter();
     
-    // Generate PDF receipt
-    const pdfGenerator = new PDFReceiptGenerator();
+    // Generate PDF receipt using new LVS design
+    const pdfGenerator = new LVSReceiptGenerator();
     const pdfPath = await pdfGenerator.generateReceipt(orderData);
     
     const mailOptions = {
@@ -165,7 +165,7 @@ const sendOrderConfirmationEmail = async (orderData) => {
       html: generateOrderConfirmationHTML(orderData),
       attachments: [
         {
-          filename: `Receipt_${orderData.orderId}.pdf`,
+          filename: `LVS_Receipt_${orderData.orderId}.pdf`,
           path: pdfPath
         }
       ],
@@ -413,6 +413,119 @@ const sendTestEmail = async (toEmail) => {
   }
 };
 
+// Send contact form notification to business
+const sendContactNotificationEmail = async (contactData) => {
+  try {
+    const transporter = createTransporter();
+    
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      company,
+      subject,
+      message
+    } = contactData;
+
+    const fullName = `${firstName} ${lastName}`;
+    const timestamp = new Date().toLocaleString('en-IN');
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'toolsandmachinelvs@gmail.com',
+      to: process.env.ADMIN_EMAIL || 'darshanvasoya75@gmail.com', // Your business email from .env
+      replyTo: email, // Customer's email for easy reply
+      subject: `📩 New Contact Form Submission: ${subject}`,
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>New Contact Form Submission</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 0; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #000000 0%, #2c2c2c 100%); color: white; padding: 30px 20px; text-align: center;">
+              <h1 style="margin: 0; font-size: 28px;">📩 New Contact Form Submission</h1>
+              <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">From LVS Machine Tools Website</p>
+            </div>
+
+            <!-- Contact Details -->
+            <div style="padding: 30px 20px;">
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #FFD700;">
+                <h2 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 20px;">👤 Contact Information</h2>
+                <p style="margin: 5px 0;"><strong>Name:</strong> ${fullName}</p>
+                <p style="margin: 5px 0;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #3498db; text-decoration: none;">${email}</a></p>
+                ${phone ? `<p style="margin: 5px 0;"><strong>Phone:</strong> <a href="tel:${phone}" style="color: #3498db; text-decoration: none;">${phone}</a></p>` : ''}
+                ${company ? `<p style="margin: 5px 0;"><strong>Company:</strong> ${company}</p>` : ''}
+                <p style="margin: 5px 0;"><strong>Subject:</strong> ${subject}</p>
+                <p style="margin: 5px 0;"><strong>Received:</strong> ${timestamp}</p>
+              </div>
+
+              <!-- Message Content -->
+              <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                <h3 style="margin: 0 0 15px 0; color: #2c3e50;">💬 Message</h3>
+                <div style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
+                  <p style="margin: 0; white-space: pre-wrap; line-height: 1.6;">${message}</p>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <h3 style="margin: 0 0 15px 0; color: #856404;">⚡ Quick Actions</h3>
+                <p style="margin: 5px 0;">
+                  <strong>Reply to Customer:</strong> 
+                  <a href="mailto:${email}?subject=Re: ${subject}" style="color: #007bff; text-decoration: none; font-weight: bold;">Click here to reply</a>
+                </p>
+                <p style="margin: 5px 0;">
+                  <strong>Call Customer:</strong> ${phone ? `<a href="tel:${phone}" style="color: #007bff; text-decoration: none; font-weight: bold;">${phone}</a>` : 'No phone number provided'}
+                </p>
+              </div>
+
+              <!-- Footer -->
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+                <p style="color: #666; font-size: 14px; margin: 0;">
+                  This email was automatically generated from your website's contact form.
+                </p>
+                <p style="color: #666; font-size: 12px; margin: 5px 0 0 0;">
+                  LVS Machine Tools | Website Contact Form | ${timestamp}
+                </p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+        New Contact Form Submission
+        
+        Name: ${fullName}
+        Email: ${email}
+        ${phone ? `Phone: ${phone}` : ''}
+        ${company ? `Company: ${company}` : ''}
+        Subject: ${subject}
+        Received: ${timestamp}
+        
+        Message:
+        ${message}
+        
+        Reply to: ${email}
+      `
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Contact notification sent successfully:', result.messageId);
+    return { success: true, messageId: result.messageId };
+    
+  } catch (error) {
+    console.error('❌ Contact notification error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Clean up temporary PDF files
 const cleanupTempFile = (filePath) => {
   try {
@@ -429,5 +542,6 @@ module.exports = {
   sendOrderConfirmationEmail,
   sendOrderNotificationToBusiness,
   sendTestEmail,
+  sendContactNotificationEmail,
   generateOrderConfirmationHTML
 };

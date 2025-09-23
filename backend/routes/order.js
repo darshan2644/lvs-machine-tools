@@ -3,6 +3,7 @@ const router = express.Router();
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Razorpay = require('razorpay');
+const { sendOrderConfirmationEmail } = require('../services/emailService');
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -526,6 +527,39 @@ router.post('/verify-payment', async (req, res) => {
     await order.save();
 
     console.log('Payment verified successfully for order:', order.orderId);
+
+    // Send professional LVS receipt via email after payment confirmation
+    try {
+      // Populate product details for the email
+      await order.populate('items.productId');
+      
+      const emailData = {
+        orderId: order.orderId,
+        customerEmail: order.customerInfo?.email,
+        customerName: `${order.customerInfo?.firstName || ''} ${order.customerInfo?.lastName || ''}`.trim(),
+        createdAt: order.createdAt,
+        customerInfo: order.customerInfo,
+        shippingAddress: order.shippingAddress,
+        items: order.items.map(item => ({
+          name: item.productId?.name || 'Product',
+          description: item.productId?.description || '',
+          price: item.price,
+          quantity: item.quantity
+        })),
+        totalAmount: order.totalPrice,
+        orderStatus: 'Payment Confirmed',
+        paymentMethod: 'Online Payment',
+        estimatedDelivery: order.estimatedDelivery?.toDateString() || 'Within 7-10 business days'
+      };
+
+      if (emailData.customerEmail) {
+        await sendOrderConfirmationEmail(emailData);
+        console.log('✅ Professional LVS receipt sent to:', emailData.customerEmail);
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending receipt email:', emailError);
+      // Don't fail the payment verification if email fails
+    }
 
     res.json({
       success: true,

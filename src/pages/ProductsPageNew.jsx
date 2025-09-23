@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { addToCart } from '../services/cartService';
+import wishlistService from '../services/wishlistService';
 import { useToast } from '../components/ToastProvider';
 import './ProductsPageNew.css';
 
@@ -8,6 +9,7 @@ const ProductsPageNew = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -21,29 +23,38 @@ const ProductsPageNew = () => {
     }
   }, [searchParams]);
 
-  // Fetch products from API
+  // Fetch products and categories from API
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/products');
-        const data = await response.json();
+        const [productsResponse, categoriesResponse] = await Promise.all([
+          fetch('http://localhost:5000/api/products'),
+          fetch('http://localhost:5000/api/categories')
+        ]);
         
-        if (data.success) {
-          setProducts(data.data);
+        const productsData = await productsResponse.json();
+        const categoriesData = await categoriesResponse.json();
+        
+        if (productsData.success) {
+          setProducts(productsData.data);
         } else {
-          console.error('Failed to fetch products:', data.message);
+          console.error('Failed to fetch products:', productsData.message);
           showError('Failed to load products');
         }
+        
+        if (categoriesData.success) {
+          setCategories(categoriesData.data);
+        }
       } catch (error) {
-        console.error('Error fetching products:', error);
-        showError('Failed to load products');
+        console.error('Error fetching data:', error);
+        showError('Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchData();
   }, [showError]);
 
   // Handle add to cart with proper product ID
@@ -61,12 +72,27 @@ const ProductsPageNew = () => {
     }
   };
 
-  // Get unique categories for filter
-  const categories = [
-    { id: 'all', name: 'All Products' },
-    ...Array.from(new Set(products.map(p => p.category))).map(cat => ({
-      id: cat,
-      name: products.find(p => p.category === cat)?.categoryName || cat
+  // Handle add to wishlist
+  const handleAddToWishlist = async (product) => {
+    try {
+      const result = await wishlistService.addToWishlist(product);
+      if (result.success) {
+        showSuccess('Product added to wishlist!');
+      } else {
+        showError(result.message || 'Failed to add product to wishlist');
+      }
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
+      showError('Failed to add product to wishlist');
+    }
+  };
+
+  // Create category options for dropdown
+  const categoryOptions = [
+    { slug: 'all', name: 'All Products' },
+    ...categories.map(cat => ({
+      slug: cat.slug,
+      name: cat.name
     }))
   ];
 
@@ -92,30 +118,34 @@ const ProductsPageNew = () => {
       <section className="products-section">
         <div className="container">
           {/* Filters */}
-          <div className="products-filters">
-            <div className="search-bar">
-              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <div className="category-filter">
-              <select 
-                value={selectedCategory} 
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+          <div className="filters-section">
+            <div className="container">
+              <div className="filters-wrapper">
+                <div className="search-container">
+                  <svg className="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  <input
+                    className="search-input"
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                
+                <select 
+                  className="category-select"
+                  value={selectedCategory} 
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  {categoryOptions.map(category => (
+                    <option key={category.slug} value={category.slug}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -139,7 +169,6 @@ const ProductsPageNew = () => {
                   <div 
                     key={product._id}
                     className="product-card"
-                    onClick={() => navigate(`/products/${product._id}`)}
                   >
                     {/* Product Image */}
                     <div className="product-image">
@@ -150,9 +179,6 @@ const ProductsPageNew = () => {
                           e.target.src = '/images/placeholder-product.svg';
                         }}
                       />
-                      <div className="product-overlay">
-                        <span>View Details</span>
-                      </div>
                     </div>
                     
                     {/* Product Info */}
@@ -170,14 +196,24 @@ const ProductsPageNew = () => {
                         className="btn-wishlist"
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log('Add to Wishlist:', product.name);
-                          showSuccess(`${product.name} added to wishlist!`);
+                          handleAddToWishlist(product);
                         }}
                         title="Add to Wishlist"
                       >
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                         </svg>
+                      </button>
+
+                      <button 
+                        className="btn-view-details"
+                        onClick={() => navigate(`/products/${product._id}`)}
+                      >
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        View Details
                       </button>
                       
                       <button 
@@ -186,7 +222,6 @@ const ProductsPageNew = () => {
                           e.stopPropagation();
                           handleAddToCart(product);
                         }}
-                        disabled={!product.price}
                       >
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v4a2 2 0 01-2 2H9a2 2 0 01-2-2v-4m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"/>

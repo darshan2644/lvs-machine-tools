@@ -1,162 +1,296 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import './CategoriesPageNew.css';
+import React, { useState, useEffect } from 'react';import React, { useState, useEffect } from 'react';
 
-// Complete category data for CNC and jewelry machines
-const categories = [
-  {
-    id: 'cnc-bangle-ring-cutting',
-    name: 'CNC Bangle & Ring Cutting Machine',
-    image: '/images/cnc-bangle-main.png',
-    description: 'Advanced CNC machines for precision bangle and ring cutting with automated operations',
-    productCount: 12,
-    features: ['High Precision', 'Automated Operation', 'Multiple Sizes']
-  },
-  {
-    id: 'bangle-cnc-cutting',
-    name: 'Bangle CNC Cutting Machine',
-    image: '/images/bangle-cnc-main.png',
-    description: 'Specialized CNC cutting machines designed specifically for bangle production',
-    productCount: 8,
-    features: ['CNC Automation', 'High Speed', 'Consistent Quality']
-  },
-  {
-    id: 'cnc-bangle-cutting-machine',
-    name: 'CNC Bangle Cutting Machine',
-    image: '/images/cnc-bangle-1.png',
-    description: 'Industrial-grade CNC machines for high-volume bangle cutting operations',
-    productCount: 10,
-    features: ['Industrial Grade', 'High Volume', 'Precision Cutting']
-  },
-  {
-    id: 'cnc-bangle-flat-half-round',
-    name: 'CNC Bangle Flat & Half Round Cutting',
-    image: '/images/cnc-bangle-2.png',
-    description: 'Versatile CNC machines for both flat and half-round bangle cutting applications',
-    productCount: 6,
-    features: ['Dual Function', 'Versatile Design', 'Precision Control']
-  },
-  {
-    id: 'bangle-cutting-machine',
-    name: 'Bangle Cutting Machine',
-    image: '/images/bangle-cnc-3.png',
-    description: 'Reliable bangle cutting machines for various production requirements',
-    productCount: 9,
-    features: ['Reliable Operation', 'Cost Effective', 'Easy Operation']
-  },
-  {
-    id: 'cutting-machine',
-    name: 'Cutting Machine',
-    image: '/images/bangle-cnc-4.png',
-    description: 'General-purpose cutting machines for various materials and applications',
-    productCount: 15,
-    features: ['Multi-Purpose', 'Various Materials', 'Flexible Setup']
-  },
-  {
-    id: '7-axis-cnc-round-ball',
-    name: '7 Axis CNC Round Ball Cutting',
-    image: '/images/cnc-9axis-main.png',
-    description: 'Advanced 7-axis CNC machines for complex round ball cutting and engraving',
-    productCount: 4,
-    features: ['7-Axis Control', 'Complex Geometry', 'High Precision']
-  },
-  {
-    id: 'cnc-bangle-mr5',
-    name: 'CNC Bangle MR5 Cutting Machine',
-    image: '/images/cnc-9axis-1.png',
-    description: 'MR5 series CNC bangle cutting machines with enhanced precision features',
-    productCount: 7,
-    features: ['MR5 Technology', 'Enhanced Precision', 'Advanced Control']
-  },
-  {
-    id: 'cnc-bangle-semi-auto',
-    name: 'CNC Bangle Semi Auto Cutting',
-    image: '/images/cnc-9axis-2.png',
-    description: 'Semi-automatic CNC bangle cutting machines for flexible production',
-    productCount: 5,
-    features: ['Semi-Automatic', 'Flexible Production', 'User Friendly']
-  },
-  {
-    id: 'jewelry-cnc-machine',
-    name: 'Jewelry CNC Machine',
-    image: '/images/cnc-bangle-main.png',
-    description: 'Specialized CNC machines designed for jewelry manufacturing and processing',
-    productCount: 13,
-    features: ['Jewelry Focused', 'Fine Detail', 'Precious Materials']
-  },
-  {
-    id: 'cnc-bangle-double-head',
-    name: 'CNC Bangle Double Head Cutting',
-    image: '/images/bangle-cnc-1.png',
-    description: 'Double head CNC bangle cutting machines for increased productivity',
-    productCount: 3,
-    features: ['Dual Head', 'High Productivity', 'Efficient Operation']
-  },
-  {
-    id: 'dough-balls-cutting',
-    name: 'Dough Balls Cutting Machine',
-    image: '/images/bangle-cnc-2.png',
-    description: 'Specialized machines for cutting dough balls with precision and consistency',
-    productCount: 6,
-    features: ['Food Grade', 'Consistent Size', 'Automated Process']
-  },
-  {
-    id: 'round-balls-faceting',
-    name: 'Round Balls Automatic Faceting',
-    image: '/images/bangle-cnc-3.png',
-    description: 'Automatic faceting machines for round ball cutting with precision control',
-    productCount: 4,
-    features: ['Automatic Faceting', 'Precision Control', 'Spherical Processing']
-  },
-  {
-    id: 'pendant-ring-engraving-cutting',
-    name: 'Pendant & Ring Engraving & Cutting',
-    image: '/images/bangle-cnc-4.png',
-    description: 'Combined engraving and cutting machines for pendants and rings',
-    productCount: 9,
-    features: ['Dual Function', 'Fine Engraving', 'Detailed Work']
-  },
-  {
-    id: 'cnc-jewellery-engraving',
-    name: 'CNC Jewellery Engraving Machine',
-    image: '/images/cnc-bangle-main.png',
-    description: 'CNC-controlled jewelry engraving machines for detailed and precise work',
-    productCount: 7,
-    features: ['CNC Control', 'Fine Detail', 'Precision Engraving']
-  },
-  {
-    id: 'jewellery-engraving-machine',
-    name: 'Jewellery Engraving Machine',
-    image: '/images/bangle-cnc-main.png',
-    description: 'Traditional jewelry engraving machines for custom and detailed engraving work',
-    productCount: 11,
-    features: ['Traditional Design', 'Custom Work', 'Manual Control']
-  },
-  {
-    id: 'bangle-ring-turning',
-    name: 'Bangle & Ring Turning Machine',
-    image: '/images/cnc-bangle-1.png',
-    description: 'Specialized turning machines for bangle and ring finishing operations',
-    productCount: 5,
-    features: ['Turning Operation', 'Finishing Quality', 'Surface Polish']
-  },
-  {
-    id: 'bangle-turning-finishing',
-    name: 'Bangle Turning & Finishing Machine',
-    image: '/images/cnc-bangle-2.png',
-    description: 'Complete turning and finishing machines for bangle surface preparation and polishing',
-    productCount: 6,
-    features: ['Complete Solution', 'Surface Prep', 'Professional Finish']
-  }
-];
+import { Link } from 'react-router-dom';import { Link } from 'react-router-dom';
 
-const CategoriesPageNew = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredCategories, setFilteredCategories] = useState(categories);
+import './CategoriesPageNew.css';import './CategoriesPageNew.css';
 
-  useEffect(() => {
-    const filtered = categories.filter(category =>
-      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+
+
+const CategoriesPageNew = () => {const CategoriesPageNew = () => {
+
+  const [searchTerm, setSearchTerm] = useState('');  const [searchTerm, setSearchTerm] = useState('');
+
+  const [categories, setCategories] = useState([]);  const [categories, setCategories] = useState([]);
+
+  const [loading, setLoading] = useState(true);  const [loading, setLoading] = useState(true);
+
+  const [productCounts, setProductCounts] = useState({});  const [productCounts, setProductCounts] = useState({});
+
+
+
+  // Fetch categories from API  // Fetch categories from API
+
+  useEffect(() => {  useEffect(() => {
+
+    const fetchCategoriesAndProducts = async () => {    const fetchCategoriesAndProducts = async () => {
+
+      try {      try {
+
+        setLoading(true);        setLoading(true);
+
+        const [categoriesResponse, productsResponse] = await Promise.all([        const [categoriesResponse, productsResponse] = await Promise.all([
+
+          fetch('http://localhost:5000/api/categories'),          fetch('http://localhost:5000/api/categories'),
+
+          fetch('http://localhost:5000/api/products')          fetch('http://localhost:5000/api/products')
+
+        ]);        ]);
+
+                
+
+        const categoriesData = await categoriesResponse.json();        const categoriesData = await categoriesResponse.json();
+
+        const productsData = await productsResponse.json();        const productsData = await productsResponse.json();
+
+                
+
+        if (categoriesData.success) {        if (categoriesData.success) {
+
+          setCategories(categoriesData.data);          setCategories(categoriesData.data);
+
+        }        }
+
+                
+
+        if (productsData.success) {        if (productsData.success) {
+
+          // Count products per category          // Count products per category
+
+          const counts = {};          const counts = {};
+
+          productsData.data.forEach(product => {          productsData.data.forEach(product => {
+
+            counts[product.category] = (counts[product.category] || 0) + 1;            counts[product.category] = (counts[product.category] || 0) + 1;
+
+          });          });
+
+          setProductCounts(counts);          setProductCounts(counts);
+
+        }        }
+
+      } catch (error) {      } catch (error) {
+
+        console.error('Error fetching data:', error);        console.error('Error fetching data:', error);
+
+      } finally {      } finally {
+
+        setLoading(false);        setLoading(false);
+
+      }      }
+
+    };    };
+
+
+
+    fetchCategoriesAndProducts();    fetchCategoriesAndProducts();
+
+  }, []);  }, []);
+
+
+
+  // Filter categories based on search term  // Filter categories based on search term
+
+  const filteredCategories = categories.filter(category =>  const filteredCategories = categories.filter(category =>
+
+    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+
+    category.description.toLowerCase().includes(searchTerm.toLowerCase())    category.description.toLowerCase().includes(searchTerm.toLowerCase())
+
+  );  );
+
+
+
+  if (loading) {  if (loading) {
+
+    return (    return (
+
+      <div className="categories-page">      <div className="categories-page">
+
+        <div className="loading-state">        <div className="loading-state">
+
+          <div className="loading-spinner"></div>          <div className="loading-spinner"></div>
+
+          <p>Loading categories...</p>          <p>Loading categories...</p>
+
+        </div>        </div>
+
+      </div>      </div>
+
+    );    );
+
+  }  }
+
+
+
+  return (  return (
+
+    <div className="categories-page">    <div className="categories-page">
+
+      {/* Hero Section */}      {/* Hero Section */}
+
+      <section className="categories-hero">      <section className="categories-hero">
+
+        <div className="container">        <div className="container">
+
+          <h1>Product Categories</h1>          <h1>Product Categories</h1>
+
+          <p>Explore our comprehensive range of CNC machines and jewelry manufacturing equipment</p>          <p>Explore our comprehensive range of CNC machines and jewelry manufacturing equipment</p>
+
+        </div>        </div>
+
+      </section>      </section>
+
+
+
+      {/* Search Section */}      {/* Search Section */}
+
+      <section className="search-section">      <section className="search-section">
+
+        <div className="container">        <div className="container">
+
+          <div className="search-container">          <div className="search-container">
+
+            <div className="search-input-wrapper">            <div className="search-input-wrapper">
+
+              <svg className="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">              <svg className="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+
+              </svg>              </svg>
+
+              <input              <input
+
+                type="text"                type="text"
+
+                placeholder="Search categories..."                placeholder="Search categories..."
+
+                value={searchTerm}                value={searchTerm}
+
+                onChange={(e) => setSearchTerm(e.target.value)}                onChange={(e) => setSearchTerm(e.target.value)}
+
+                className="search-input"                className="search-input"
+
+              />              />
+
+            </div>            </div>
+
+          </div>          </div>
+
+        </div>        </div>
+
+      </section>      </section>
+
+
+
+      {/* Categories Grid */}      {/* Categories Grid */}
+
+      <section className="categories-section">      <section className="categories-section">
+
+        <div className="container">        <div className="container">
+
+          <div className="categories-grid">          <div className="categories-grid">
+
+            {filteredCategories.map((category) => (            {filteredCategories.map((category) => (
+
+              <div key={category._id} className="category-card">              <div key={category._id} className="category-card">
+
+                <div className="category-image">                <div className="category-image">
+
+                  <img                  <img
+
+                    src={category.image || '/images/placeholder-product.svg'}                    src={category.image || '/images/placeholder-product.svg'}
+
+                    alt={category.name}                    alt={category.name}
+
+                    onError={(e) => {                    onError={(e) => {
+
+                      e.target.src = '/images/placeholder-product.svg';                      e.target.src = '/images/placeholder-product.svg';
+
+                    }}                    }}
+
+                  />                  />
+
+                </div>                </div>
+
+                                
+
+                <div className="category-content">                <div className="category-content">
+
+                  <h3 className="category-name">{category.name}</h3>                  <h3 className="category-name">{category.name}</h3>
+
+                  <p className="category-description">{category.description}</p>                  <p className="category-description">{category.description}</p>
+
+                                    
+
+                  <div className="category-features">                  <div className="category-features">
+
+                    {category.features && category.features.map((feature, index) => (                    {category.features && category.features.map((feature, index) => (
+
+                      <span key={index} className="feature-tag">{feature}</span>                      <span key={index} className="feature-tag">{feature}</span>
+
+                    ))}                    ))}
+
+                  </div>                  </div>
+
+                                    
+
+                  <div className="category-footer">                  <div className="category-footer">
+
+                    <span className="product-count">                    <span className="product-count">
+
+                      {productCounts[category.slug] || 0} Products                      {productCounts[category.slug] || 0} Products
+
+                    </span>                    </span>
+
+                    <Link                     <Link 
+
+                      to={`/products?category=${category.slug}`}                       to={`/products?category=${category.slug}`} 
+
+                      className="view-products-btn"                      className="view-products-btn"
+
+                    >                    >
+
+                      View Products                      View Products
+
+                    </Link>                    </Link>
+
+                  </div>                  </div>
+
+                </div>                </div>
+
+              </div>              </div>
+
+            ))}            ))}
+
+          </div>          </div>
+
+
+
+          {filteredCategories.length === 0 && !loading && (          {filteredCategories.length === 0 && !loading && (
+
+            <div className="no-results">            <div className="no-results">
+
+              <h3>No categories found</h3>              <h3>No categories found</h3>
+
+              <p>Try adjusting your search terms.</p>              <p>Try adjusting your search terms.</p>
+
+            </div>            </div>
+
+          )}          )}
+
+        </div>        </div>
+
+      </section>      </section>
+
+    </div>    </div>
+
+  );  );
+
+};};
+
+
+
+export default CategoriesPageNew;export default CategoriesPageNew;
       category.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       category.features.some(feature => 
         feature.toLowerCase().includes(searchTerm.toLowerCase())

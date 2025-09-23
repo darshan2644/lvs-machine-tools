@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sendOrderConfirmationEmail, sendOrderNotificationToBusiness, sendTestEmail } = require('../services/emailService');
+const { sendOrderConfirmationEmail, sendOrderNotificationToBusiness, sendTestEmail, sendContactNotificationEmail } = require('../services/emailService');
 
 // Send order confirmation email
 router.post('/order-confirmation', async (req, res) => {
@@ -87,6 +87,48 @@ router.post('/test', async (req, res) => {
   }
 });
 
+// Send contact form notification to business
+router.post('/contact', async (req, res) => {
+  try {
+    const contactData = req.body;
+    
+    // Validate required fields
+    if (!contactData.email || !contactData.firstName || !contactData.lastName || !contactData.subject || !contactData.message) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Missing required contact data (email, firstName, lastName, subject, message)' 
+      });
+    }
+
+    console.log('📧 Sending contact form notification from:', contactData.email);
+    
+    // Send the contact notification email
+    const result = await sendContactNotificationEmail(contactData);
+    
+    if (result.success) {
+      res.json({ 
+        success: true, 
+        message: 'Contact form submitted successfully',
+        messageId: result.messageId 
+      });
+    } else {
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to send contact notification',
+        details: result.error 
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ Contact form notification error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Internal server error',
+      details: error.message 
+    });
+  }
+});
+
 // Send order notification to business email FROM customer email
 router.post('/business-notification', async (req, res) => {
   try {
@@ -139,6 +181,7 @@ router.get('/test', (req, res) => {
     endpoints: {
       'POST /email/order-confirmation': 'Send order confirmation email',
       'POST /email/business-notification': 'Send order notification to business email',
+      'POST /email/contact': 'Send contact form notification to business',
       'POST /email/test': 'Send test email',
       'GET /email/test': 'Check email service status'
     }

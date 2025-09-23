@@ -173,15 +173,29 @@ const CategoriesPage = () => {
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [productCounts, setProductCounts] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/categories');
-        setCategories(response.data.data || defaultCategories);
+        const [categoriesRes, productsRes] = await Promise.all([
+          axios.get('http://localhost:5000/api/categories'),
+          axios.get('http://localhost:5000/api/products')
+        ]);
+        
+        setCategories(categoriesRes.data.data || defaultCategories);
+        
+        // Count products per category
+        if (productsRes.data.success) {
+          const counts = {};
+          productsRes.data.data.forEach(product => {
+            counts[product.category] = (counts[product.category] || 0) + 1;
+          });
+          setProductCounts(counts);
+        }
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('Error fetching data:', error);
         setCategories(defaultCategories);
       } finally {
         setLoading(false);
@@ -281,9 +295,9 @@ const CategoriesPage = () => {
                   
                   <p className="category-description">{category.description}</p>
                   
-                  {category.productCount && (
-                    <p className="category-count">{category.productCount} Products Available</p>
-                  )}
+                  <p className="category-count">
+                    {productCounts[category.slug] || category.productCount || 0} Products Available
+                  </p>
                   
                   <Link 
                     to={`/products?category=${category.slug}`} 

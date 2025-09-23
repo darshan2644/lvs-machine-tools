@@ -8,10 +8,10 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ProfilePageNew from './pages/ProfilePageNew';
 import CategoriesPage from './pages/CategoriesPage';
-import CategoriesPageNew from './pages/CategoriesPage-new';
 import ProductsPage from './pages/ProductsPage';
 import ProductsPageNew from './pages/ProductsPageNew';
 import ProductDetailPage from './pages/ProductDetailPage';
+import WishlistPage from './pages/WishlistPage';
 import CNC9AxisPage from './pages/CNC9AxisPage';
 import BangleCNCPage from './pages/BangleCNCPage';
 import CNCBangleCuttingPage from './pages/CNCBangleCuttingPage';
@@ -42,11 +42,11 @@ function App() {
             <main className="main-content" style={{ paddingTop: '80px' }}>
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/categories" element={<CategoriesPageNew />} />
-              <Route path="/categories-old" element={<CategoriesPage />} />
+              <Route path="/categories" element={<CategoriesPage />} />
               <Route path="/products" element={<ProductsPageNew />} />
               <Route path="/products-old" element={<ProductsPage />} />
               <Route path="/product/:id" element={<ProductDetailPage />} />
+              <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/cnc-9axis-machine" element={<CNC9AxisPage />} />
               <Route path="/bangle-cnc-cutting-machine" element={<BangleCNCPage />} />
               <Route path="/cnc-bangle-cutting-machine" element={<CNCBangleCuttingPage />} />

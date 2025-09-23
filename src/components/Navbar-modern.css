@@ -3,13 +3,13 @@
 
 /* CSS Variables */
 :root {
-  --primary-blue: #007BFF;
+  --primary-blue: #0a0a0b;
   --white: #FFFFFF;
   --dark-gray: #333333;
   --medium-gray: #555555;
   --light-gray: #f4f4f4;
   --border-gray: #e0e0e0;
-  --hover-blue: #0056b3;
+  --hover-blue: #000000;
   --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
 }

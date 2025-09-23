@@ -3,16 +3,17 @@ const mongoose = require('mongoose');
 const Category = require('./models/Category');
 const Product = require('./models/Product');
 
-// MongoDB connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB Connected Successfully');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  }
-};
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/lvs-machine-tools', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => {
+  console.log('MongoDB Connected Successfully');
+})
+.catch(err => {
+  console.log('MongoDB Connection Error:', err);
+});
 
 // Categories data
 const categories = [
@@ -20,6 +21,7 @@ const categories = [
     name: 'CNC Bangle And Ring Cutting Machine',
     slug: 'cnc-bangle-cutting',
     description: 'Advanced CNC machines for precision cutting and engraving of bangles and rings',
+    image: '/images/cnc-bangle-main.png',
     icon: 'fa-cogs',
     order: 1,
     isActive: true
@@ -28,6 +30,7 @@ const categories = [
     name: 'Dough Balls Cutting Machine',
     slug: 'dough-balls-cutting',
     description: 'Specialized machines for cutting and shaping round balls',
+    image: '/images/7-axis-round-ball.png',
     icon: 'fa-circle',
     order: 2,
     isActive: true
@@ -36,6 +39,7 @@ const categories = [
     name: 'Pendent And Ring Engraving & Cutting Machine',
     slug: 'pendent-ring-engraving',
     description: 'Professional engraving and cutting machines for pendants and rings',
+    image: '/images/4-axis-pendant-pro.png',
     icon: 'fa-gem',
     order: 3,
     isActive: true
@@ -44,6 +48,7 @@ const categories = [
     name: 'Faceting Machine',
     slug: 'faceting-machine',
     description: 'Precision faceting machines for jewelry manufacturing',
+    image: '/images/4-axis-chain-faceting.png',
     icon: 'fa-cut',
     order: 4,
     isActive: true
@@ -52,6 +57,7 @@ const categories = [
     name: 'Jewellery Cutting Machine',
     slug: 'jewellery-cutting',
     description: 'General purpose jewelry cutting machines',
+    image: '/images/bangle-cnc-2.png',
     icon: 'fa-tools',
     order: 5,
     isActive: true
@@ -60,6 +66,7 @@ const categories = [
     name: 'Jewellery Engraving Machine',
     slug: 'jewellery-engraving',
     description: 'Professional engraving machines for jewelry decoration',
+    image: '/images/double-head-decoration.png',
     icon: 'fa-pen-fancy',
     order: 6,
     isActive: true
@@ -73,8 +80,8 @@ const products = [
     description: 'High-precision 9-axis CNC machine with automatic tool changing capability for universal cutting and engraving operations.',
     category: 'cnc-bangle-cutting',
     categoryName: 'CNC Bangle And Ring Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&h=300&fit=crop',
+    price: 320000,
+    image: '/images/cnc-9axis-main.png',
     specifications: {
       axes: '9 Axis',
       control: 'CNC',
@@ -88,8 +95,8 @@ const products = [
     description: 'Advanced 8-axis CNC system for cutting flat and half round bangles and rings with combined cutting and engraving capabilities.',
     category: 'cnc-bangle-cutting',
     categoryName: 'CNC Bangle And Ring Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=400&h=300&fit=crop',
+    price: 285000,
+    image: '/images/8-axis-universal-bangle.png',
     specifications: {
       axes: '8 Axis',
       control: 'CNC',
@@ -99,32 +106,32 @@ const products = [
     isActive: true
   },
   {
-    name: '7 Axis CNC Universal Flat Bangle Horizontal and Vertical Cutting & Engraving Machine',
-    description: 'Versatile 7-axis CNC machine for horizontal and vertical cutting and engraving of flat bangles.',
-    category: 'cnc-bangle-cutting',
-    categoryName: 'CNC Bangle And Ring Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&h=300&fit=crop',
+    name: '7 Axis CNC Round Ball Cutting And Engraving Horizontal And Vertical Machine',
+    description: 'Specialized 7-axis CNC machine for cutting and engraving round balls in both horizontal and vertical positions.',
+    category: 'dough-balls-cutting',
+    categoryName: 'Dough Balls Cutting Machine',
+    price: 250000,
+    image: '/images/7-axis-round-ball.png',
     specifications: {
       axes: '7 Axis',
       control: 'CNC',
-      features: ['Horizontal Cutting', 'Vertical Cutting', 'Universal Design'],
-      applications: ['Flat Bangle Production', 'Precision Engraving']
+      features: ['Round Ball Cutting', 'Horizontal/Vertical Operation', 'Precision Engraving'],
+      applications: ['Ball Manufacturing', 'Decorative Spheres']
     },
     isActive: true
   },
   {
-    name: '7 Axis CNC Round Ball Cutting And Engraving Horizontal And Vertical Machine',
-    description: 'Specialized 7-axis CNC machine for cutting and engraving round balls in both horizontal and vertical orientations.',
-    category: 'dough-balls-cutting',
-    categoryName: 'Dough Balls Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop',
+    name: '7 Axis CNC Flat, Round and Oval Bangle Chain Faceting Machine',
+    description: 'Versatile 7-axis CNC machine for faceting flat, round, and oval bangle chains.',
+    category: 'faceting-machine',
+    categoryName: 'Faceting Machine',
+    price: 220000,
+    image: '/images/7-axis-flat-bangle.png',
     specifications: {
       axes: '7 Axis',
       control: 'CNC',
-      features: ['Round Ball Cutting', 'Dual Orientation', 'Precision Engraving'],
-      applications: ['Ball Manufacturing', 'Decorative Elements']
+      features: ['Multi-shape Faceting', 'Chain Processing', 'Precision Control'],
+      applications: ['Chain Faceting', 'Bangle Processing']
     },
     isActive: true
   },
@@ -133,58 +140,58 @@ const products = [
     description: 'PLC-controlled 4-axis machine designed for precise round ball cutting operations.',
     category: 'dough-balls-cutting',
     categoryName: 'Dough Balls Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1581094289062-7a6db75c31e7?w=400&h=300&fit=crop',
+    price: 185000,
+    image: '/images/4-axis-chain-faceting.png',
     specifications: {
       axes: '4 Axis',
-      control: 'PLC Based',
-      features: ['Round Ball Cutting', 'Precision Control', 'User-Friendly Interface'],
-      applications: ['Ball Production', 'Industrial Manufacturing']
+      control: 'PLC',
+      features: ['Round Ball Cutting', 'PLC Control', 'High Precision'],
+      applications: ['Ball Cutting', 'Sphere Manufacturing']
     },
     isActive: true
   },
   {
-    name: '4 Axis Pro CNC Pendent Engraving & Cutting Machine',
+    name: '4 Axis Pro CNC Pendant Engraving & Cutting Machine',
     description: 'Professional 4-axis CNC machine specialized for pendant engraving and cutting operations.',
     category: 'pendent-ring-engraving',
     categoryName: 'Pendent And Ring Engraving & Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&h=300&fit=crop',
+    price: 165000,
+    image: '/images/4-axis-pendant-pro.png',
     specifications: {
-      axes: '4 Axis Pro',
+      axes: '4 Axis',
       control: 'CNC',
       features: ['Pendant Engraving', 'Precision Cutting', 'Professional Grade'],
-      applications: ['Jewelry Engraving', 'Custom Pendants']
+      applications: ['Pendant Manufacturing', 'Ring Engraving']
     },
     isActive: true
   },
   {
     name: '4 Axis PLC Based Chain Faceting Horizontal Machine',
-    description: 'PLC-based horizontal chain faceting machine with 4-axis precision control.',
+    description: 'PLC-based horizontal chain faceting machine with 4-axis control for precise chain processing.',
     category: 'faceting-machine',
     categoryName: 'Faceting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=400&h=300&fit=crop',
+    price: 145000,
+    image: '/images/atc-cnc-bangle-main.png',
     specifications: {
       axes: '4 Axis',
-      control: 'PLC Based',
-      features: ['Chain Faceting', 'Horizontal Operation', 'Precision Control'],
-      applications: ['Chain Manufacturing', 'Faceting Operations']
+      control: 'PLC',
+      features: ['Chain Faceting', 'Horizontal Operation', 'PLC Control'],
+      applications: ['Chain Processing', 'Link Manufacturing']
     },
     isActive: true
   },
   {
-    name: '2 Axis Pic Based Bangle Inside Turning & Finishing Machine',
-    description: 'PIC-based 2-axis machine for inside turning and finishing of bangles.',
+    name: '2 Axis Plc Based Bangle Inside Turning & Finishing Machine',
+    description: 'PLC-based 2-axis machine for inside turning and finishing of bangles.',
     category: 'cnc-bangle-cutting',
     categoryName: 'CNC Bangle And Ring Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&h=300&fit=crop',
+    price: 125000,
+    image: '/images/bangle-cnc-main.png',
     specifications: {
       axes: '2 Axis',
-      control: 'PIC Based',
-      features: ['Inside Turning', 'Finishing Operations', 'Automated Control'],
-      applications: ['Bangle Finishing', 'Internal Processing']
+      control: 'PLC',
+      features: ['Inside Turning', 'Surface Finishing', 'Quality Control'],
+      applications: ['Bangle Manufacturing', 'Surface Treatment']
     },
     isActive: true
   },
@@ -193,10 +200,10 @@ const products = [
     description: 'Specialized machine for internal turning and finishing operations on bangles.',
     category: 'cnc-bangle-cutting',
     categoryName: 'CNC Bangle And Ring Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=400&h=300&fit=crop',
+    price: 105000,
+    image: '/images/bangle-cnc-1.png',
     specifications: {
-      control: 'Manual/Semi-Auto',
+      operation: 'Inside Turning',
       features: ['Inside Turning', 'Surface Finishing', 'Quality Control'],
       applications: ['Bangle Manufacturing', 'Surface Treatment']
     },
@@ -207,8 +214,8 @@ const products = [
     description: 'Hydraulic-powered machine for precise bangle sizing operations.',
     category: 'cnc-bangle-cutting',
     categoryName: 'CNC Bangle And Ring Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&h=300&fit=crop',
+    price: 95000,
+    image: '/images/hydraulic-bangle-sizing.png',
     specifications: {
       power: 'Hydraulic',
       features: ['Precise Sizing', 'High Pressure', 'Consistent Results'],
@@ -221,8 +228,8 @@ const products = [
     description: 'High-efficiency machine for continuous pipe cutting operations.',
     category: 'jewellery-cutting',
     categoryName: 'Jewellery Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop',
+    price: 75000,
+    image: '/images/cnc-bangle-main.png',
     specifications: {
       operation: 'Continuous',
       features: ['High Speed', 'Consistent Cuts', 'Automated Feed'],
@@ -235,8 +242,8 @@ const products = [
     description: 'Dual-orientation machine for flat surface engraving and cutting in both horizontal and vertical positions.',
     category: 'jewellery-engraving',
     categoryName: 'Jewellery Engraving Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&h=300&fit=crop',
+    price: 155000,
+    image: '/images/cnc-bangle-2.png',
     specifications: {
       orientation: 'Horizontal & Vertical',
       features: ['Dual Position', 'Flat Surface Processing', 'Versatile Operation'],
@@ -249,8 +256,8 @@ const products = [
     description: 'Specialized machine for creating grooves in bangles through rolling process.',
     category: 'cnc-bangle-cutting',
     categoryName: 'CNC Bangle And Ring Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&h=300&fit=crop',
+    price: 55000,
+    image: '/images/bangle-groove-rolling.png',
     specifications: {
       process: 'Rolling',
       features: ['Groove Creation', 'Precision Rolling', 'Pattern Making'],
@@ -263,8 +270,8 @@ const products = [
     description: 'Dual-head machine for horizontal and vertical decoration operations.',
     category: 'jewellery-engraving',
     categoryName: 'Jewellery Engraving Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=400&h=300&fit=crop',
+    price: 135000,
+    image: '/images/double-head-decoration.png',
     specifications: {
       heads: 'Double Head',
       orientation: 'Horizontal & Vertical',
@@ -278,8 +285,8 @@ const products = [
     description: '5-axis CNC machine specialized for vertical cutting of acrylic bangles.',
     category: 'cnc-bangle-cutting',
     categoryName: 'CNC Bangle And Ring Cutting Machine',
-    price: null,
-    image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&h=300&fit=crop',
+    price: 25000,
+    image: '/images/bangle-cnc-2.png',
     specifications: {
       axes: '5 Axis',
       control: 'CNC',
@@ -310,26 +317,18 @@ const seedDatabase = async () => {
     console.log(`✅ Inserted ${insertedProducts.length} products`);
     
     console.log('🎉 Database seeding completed successfully!');
-    
-    // Display summary
-    console.log('\n📊 Summary:');
+    console.log(`\n📊 Summary:`);
     console.log(`Categories: ${insertedCategories.length}`);
     console.log(`Products: ${insertedProducts.length}`);
     
-    // Close connection
-    await mongoose.connection.close();
-    console.log('🔌 Database connection closed');
-    
   } catch (error) {
     console.error('❌ Error seeding database:', error);
-    process.exit(1);
+  } finally {
+    // Close the database connection
+    await mongoose.connection.close();
+    console.log('🔌 Database connection closed');
   }
 };
 
-// Run seeding
-const runSeed = async () => {
-  await connectDB();
-  await seedDatabase();
-};
-
-runSeed();
+// Run the seed function
+seedDatabase();

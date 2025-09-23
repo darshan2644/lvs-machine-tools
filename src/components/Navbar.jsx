@@ -155,7 +155,13 @@ const Navbar = () => {
               <div className="user-menu-wrapper">
                 <button onClick={toggleUserMenu} className="user-profile-btn">
                   <div className="user-avatar">
-                    {(user?.firstName?.[0] || user?.name?.[0] || 'U').toUpperCase()}
+                    {user?.avatar ? (
+                      <span className="avatar-emoji">{user.avatar}</span>
+                    ) : (
+                      <span className="avatar-letter">
+                        {(user?.firstName?.[0] || user?.name?.[0] || 'U').toUpperCase()}
+                      </span>
+                    )}
                   </div>
                   <span className="user-name">
                     {user?.firstName || user?.name || 'User'}
@@ -169,7 +175,13 @@ const Navbar = () => {
                   <div className="user-dropdown">
                     <div className="user-info">
                       <div className="user-avatar-large">
-                        {user?.avatar || (user?.firstName?.[0] || user?.name?.[0] || 'U').toUpperCase()}
+                        {user?.avatar ? (
+                          <span className="avatar-emoji-large">{user.avatar}</span>
+                        ) : (
+                          <span className="avatar-letter-large">
+                            {(user?.firstName?.[0] || user?.name?.[0] || 'U').toUpperCase()}
+                          </span>
+                        )}
                       </div>
                       <div className="user-details">
                         <span className="user-display-name">
@@ -178,52 +190,32 @@ const Navbar = () => {
                             : user?.name || 'User'}
                         </span>
                         <span className="user-email">{user?.email || 'user@example.com'}</span>
-                        {user?.phone && (
-                          <span className="user-phone">📱 {user.phone}</span>
-                        )}
-                        {user?.company && (
-                          <span className="user-company">🏢 {user.company}</span>
-                        )}
                       </div>
                     </div>
                     
-                    {user?.savedAddresses && user.savedAddresses.length > 0 && (
-                      <div className="user-addresses">
-                        <div className="address-header">
-                          <span>📍 Saved Addresses</span>
-                        </div>
-                        <div className="address-list">
-                          {user.savedAddresses.slice(0, 2).map((address, index) => (
-                            <div key={index} className="address-item">
-                              <span className="address-label">{address.label || `Address ${index + 1}`}</span>
-                              <span className="address-text">
-                                {address.address}, {address.city}, {address.state} {address.pincode}
-                              </span>
-                            </div>
-                          ))}
-                          {user.savedAddresses.length > 2 && (
-                            <div className="address-more">
-                              +{user.savedAddresses.length - 2} more addresses
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    
                     <div className="user-menu-divider"></div>
+                    
                     <Link to="/profile" className="user-menu-link" onClick={() => setShowUserMenu(false)}>
                       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                       </svg>
                       Profile Settings
                     </Link>
+                    <Link to="/wishlist" className="user-menu-link" onClick={() => setShowUserMenu(false)}>
+                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                      </svg>
+                      My Wishlist
+                    </Link>
                     <Link to="/orders" className="user-menu-link" onClick={() => setShowUserMenu(false)}>
                       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                       </svg>
-                      Orders
+                      My Orders
                     </Link>
+                    
                     <div className="user-menu-divider"></div>
+                    
                     <button onClick={handleLogout} className="logout-btn">
                       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
