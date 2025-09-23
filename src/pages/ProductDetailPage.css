@@ -181,38 +181,42 @@
 }
 
 .btn-buy-now {
-  background: #ff9900;
-  color: #000;
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
 }
 
 .btn-buy-now:hover {
-  background: #e88900;
+  background: #333333;
+  border-color: #333333;
   transform: translateY(-1px);
 }
 
 .btn-add-to-cart {
-  background: #ffd814;
-  color: #000;
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
 }
 
 .btn-add-to-cart:hover {
-  background: #f7ca00;
+  background: #f5f5f5;
   transform: translateY(-1px);
 }
 
 .btn-wishlist {
-  background: #fff;
-  color: #007185;
-  border: 1px solid #d5d9d9;
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #cccccc;
 }
 
 .btn-wishlist:hover {
-  background: #f7fafa;
+  background: #f5f5f5;
 }
 
 .btn-wishlist.active {
-  background: #007185;
-  color: #fff;
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
 }
 
 /* === PRODUCT TABS === */
