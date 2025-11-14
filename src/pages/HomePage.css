@@ -401,9 +401,7 @@
   transform: translateY(-8px);
   box-shadow: 0 16px 48px rgba(255, 215, 0, 0.3);
 }
-*/
 
-/*
 .category-content {
   flex: 1;
   display: flex;
@@ -500,7 +498,6 @@
   padding: 0.2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-*/
 
 .machine-icon-special .icon-large {
   opacity: 0.8;
