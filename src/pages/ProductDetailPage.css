@@ -1009,6 +1009,8 @@
   box-shadow: var(--shadow-md);
 }
 
+}
+
 /* === RESPONSIVE DESIGN === */
 @media (max-width: 1024px) {
   .product-layout {
