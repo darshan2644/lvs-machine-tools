@@ -149,7 +149,7 @@
 
 .btn-primary {
   background: linear-gradient(135deg, var(--vibrant-yellow) 0%, #FFA000 100%);
-  color: var(--primary-black);
+  color: #ffffff !important;
   border-color: var(--vibrant-yellow);
   box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
 }
