@@ -4,43 +4,52 @@ Purpose: Security testing, SAST/DAST scanning, and training
 DO NOT USE IN PRODUCTION
 """
 
+import os
 import sqlite3
 
-# ❌ Hard-coded fake API keys (for secret scanners)
-API_KEY_STRIPE = "sk_test_FAKE1234567890"
-API_KEY_AWS = "AKIAFAKEKEY123456"
-API_KEY_GITHUB = "ghp_FAKEgithubtoken123"
+# Securely load API keys from environment variables (no hardcoded secrets)
+API_KEY_STRIPE = os.getenv("API_KEY_STRIPE", "")
+API_KEY_AWS = os.getenv("API_KEY_AWS", "")
+API_KEY_GITHUB = os.getenv("API_KEY_GITHUB", "")
 
-# ❌ Insecure database connection
-conn = sqlite3.connect("test.db")
-cursor = conn.cursor()
+# Configurable database path via environment variable
+DB_PATH = os.getenv("DB_PATH", "test.db")
 
-# ❌ Insecure SQL query construction (SQL injection example)
+
+def _mask_secret(secret: str, show_last: int = 4) -> str:
+    if not secret:
+        return "[unset]"
+    if len(secret) <= show_last:
+        return "*" * len(secret)
+    return "*" * (len(secret) - show_last) + secret[-show_last:]
+
+
+# Secure SQL query construction using parameterization
 def get_user(username):
-    query = f"""
-    SELECT *
-    FROM users
-    WHERE username = '{username}'
-    """
-    print("Executing query:", query)
-    cursor.execute(query)
-    return cursor.fetchall()
+    query = "SELECT * FROM users WHERE username = ?"
+    print("Executing query:", query, "params:", (username,))
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (username,))
+        return cursor.fetchall()
 
-# ❌ Another broken query example with line breaks
+
+# Secure deletion using parameterized query
 def delete_user(user_id):
-    sql = (
-        "DELETE FROM users \n"
-        "WHERE id = " + user_id
-    )
-    cursor.execute(sql)
-    conn.commit()
+    sql = "DELETE FROM users WHERE id = ?"
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute(sql, (user_id,))
+        conn.commit()
 
-# ❌ Insecure logging of secrets
+
+# Avoid logging secrets in plaintext: mask values
 def debug():
     print("Loaded API keys:")
-    print(API_KEY_STRIPE)
-    print(API_KEY_AWS)
-    print(API_KEY_GITHUB)
+    print(_mask_secret(API_KEY_STRIPE))
+    print(_mask_secret(API_KEY_AWS))
+    print(_mask_secret(API_KEY_GITHUB))
+
 
 if __name__ == "__main__":
     debug()
