@@ -20,8 +20,13 @@ cursor = conn.cursor()
 def _mask_secret(secret, unmasked=4):
     if not secret:
         return "(not set)"
-    masked_len = max(len(secret) - unmasked, 0)
-    return ("*" * masked_len) + secret[-unmasked:]
+    s = str(secret)
+    if unmasked < 0:
+        unmasked = 0
+    if len(s) <= unmasked:
+        return "*" * len(s)
+    masked_len = len(s) - unmasked
+    return ("*" * masked_len) + s[-unmasked:]
 
 # ✅ Secure SQL query using parameterized inputs
 def get_user(username):
